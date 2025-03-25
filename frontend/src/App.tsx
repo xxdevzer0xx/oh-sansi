@@ -6,7 +6,7 @@ import { Home } from './pages/Home';
 import { Registration } from './pages/Registration';
 import { PaymentConfirmation } from './pages/PaymentConfirmation';
 import { Admin } from './pages/Admin';
-
+import { CompForm } from './pages/CompForm';
 function App() {
   return (
     <Router>
@@ -17,6 +17,7 @@ function App() {
           <Route path="/registro" element={<Registration />} />
           <Route path="/confirmacion" element={<PaymentConfirmation />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/compForm" element={<CompForm />} />
         </Routes>
         <Footer />
       </div>
