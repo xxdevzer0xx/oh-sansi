@@ -1,3 +1,4 @@
+import { FormFieldsAdmin } from './components/FromFieldsAdmin';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
@@ -17,6 +18,7 @@ function App() {
           <Route path="/registro" element={<Registration />} />
           <Route path="/confirmacion" element={<PaymentConfirmation />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/fields" element={<FormFieldsAdmin />} />
         </Routes>
         <Footer />
       </div>

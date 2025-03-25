@@ -1,15 +1,22 @@
+
+export interface Guardian {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 export interface Student {
   name: string;
   ci: string;
   birthDate: string;
   email: string;
   phone: string;
+  school: string;
+  grade: string;
+  city: string;
+  province: string;
   areas: string[];
-  guardian: {
-    name: string;
-    email: string;
-    phone: string;
-  };
+  guardian: Guardian; 
 }
 
 export interface CompetitionArea {
@@ -35,4 +42,13 @@ export interface PaymentDetails {
   status: 'pending' | 'processing' | 'completed' | 'failed';
   transactionId?: string;
   paymentDate?: string;
+}
+
+export interface FormFieldConfig {
+  id: string;
+  field_name: string;
+  field_key: string;
+  is_required: boolean;
+  is_active: boolean;
+  category: 'student' | 'guardian' | 'competition';
 }

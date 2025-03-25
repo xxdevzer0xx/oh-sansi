@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Student, CompetitionArea, RegistrationSummary } from '../types';
+import type { Student, CompetitionArea, RegistrationSummary, FormFieldConfig } from '../types';
 
 const initialFormData: Student = {
   name: '',
@@ -8,6 +8,10 @@ const initialFormData: Student = {
   birthDate: '',
   email: '',
   phone: '',
+  school: '',
+  grade: '',
+  city: '',
+  province: '',
   areas: [],
   guardian: {
     name: '',
@@ -40,25 +44,85 @@ const availableAreas: CompetitionArea[] = [
   },
 ];
 
+/** Simular la base de datos*/
+const defaultFieldConfig: FormFieldConfig[] = [
+  { id: '1', field_name: 'Nombre Completo', field_key: 'name', is_required: true, is_active: true, category: 'student' },
+  { id: '2', field_name: 'Cédula de Identidad', field_key: 'ci', is_required: true, is_active: true, category: 'student' },
+  { id: '3', field_name: 'Fecha de Nacimiento', field_key: 'birthDate', is_required: true, is_active: true, category: 'student' },
+  { id: '4', field_name: 'Correo Electrónico', field_key: 'email', is_required: true, is_active: true, category: 'student' },
+  { id: '5', field_name: 'Teléfono', field_key: 'phone', is_required: true, is_active: true, category: 'student' },
+  { id: '6', field_name: 'Colegio', field_key: 'school', is_required: false, is_active: true, category: 'student' },
+  { id: '7', field_name: 'Curso', field_key: 'grade', is_required: false, is_active: true, category: 'student' },
+  { id: '8', field_name: 'Departamento', field_key: 'city', is_required: false, is_active: true, category: 'student' },
+  { id: '9', field_name: 'Provincia', field_key: 'province', is_required: false, is_active: true, category: 'student' },
+  { id: '10', field_name: 'Nombre del Tutor', field_key: 'guardian.name', is_required: true, is_active: true, category: 'guardian' },
+  { id: '11', field_name: 'Correo del Tutor', field_key: 'guardian.email', is_required: true, is_active: true, category: 'guardian' },
+  { id: '12', field_name: 'Teléfono del Tutor', field_key: 'guardian.phone', is_required: true, is_active: true, category: 'guardian' },
+];
+
 export function Registration() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Student>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [fieldConfig, setFieldConfig] = useState<FormFieldConfig[]>([]);
+
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('formFieldConfig');
+    if (savedConfig) {
+      try {
+        const parsed = JSON.parse(savedConfig);
+        const validConfig = defaultFieldConfig.map(defaultField => {
+          const savedField = parsed.find((f: FormFieldConfig) => f.id === defaultField.id);
+          return savedField || defaultField;
+        });
+        setFieldConfig(validConfig);
+      } catch (error) {
+        console.error('Error parsing config:', error);
+        setFieldConfig(defaultFieldConfig);
+      }
+    } else {
+      setFieldConfig(defaultFieldConfig);
+    }
+  }, []);
+
+  const handleStudentFieldChange = (field: keyof Student, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleGuardianFieldChange = (field: keyof Student['guardian'], value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      guardian: {
+        ...prev.guardian,
+        [field]: value
+      }
+    }));
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.name) newErrors.name = 'El nombre es requerido';
-    if (!formData.ci) newErrors.ci = 'El CI es requerido';
-    if (!formData.birthDate) newErrors.birthDate = 'La fecha de nacimiento es requerida';
-    if (!formData.email) newErrors.email = 'El correo electrónico es requerido';
-    if (!formData.phone) newErrors.phone = 'El teléfono es requerido';
-    if (formData.areas.length === 0) newErrors.areas = 'Debe seleccionar al menos un área';
+    fieldConfig.forEach(field => {
+      if (!field.is_active) return;
+      
+      if (field.is_required) {
+        if (field.field_key.startsWith('guardian.')) {
+          const guardianField = field.field_key.split('.')[1] as keyof Student['guardian'];
+          if (!formData.guardian[guardianField]) {
+            newErrors[field.field_key] = `${field.field_name} es requerido`;
+          }
+        } else {
+          const studentField = field.field_key as keyof Student;
+          if (!formData[studentField]) {
+            newErrors[field.field_key] = `${field.field_name} es requerido`;
+          }
+        }
+      }
+    });
     
-    // Validate guardian information
-    if (!formData.guardian.name) newErrors['guardian.name'] = 'El nombre del tutor es requerido';
-    if (!formData.guardian.email) newErrors['guardian.email'] = 'El correo del tutor es requerido';
-    if (!formData.guardian.phone) newErrors['guardian.phone'] = 'El teléfono del tutor es requerido';
+    if (formData.areas.length === 0) {
+      newErrors.areas = 'Debe seleccionar al menos un área';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -91,6 +155,51 @@ export function Registration() {
     }));
   };
 
+  const renderField = (fieldKey: string, label: string, type = 'text') => {
+    const field = fieldConfig.find(f => f.field_key === fieldKey);
+    if (!field || !field.is_active) return null;
+
+    if (fieldKey.startsWith('guardian.')) {
+      const guardianField = fieldKey.split('.')[1] as keyof Student['guardian'];
+      return (
+        <div>
+          <label htmlFor={fieldKey} className="block text-sm font-medium text-gray-700">
+            {label} {field.is_required && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type={type}
+            id={fieldKey}
+            value={formData.guardian[guardianField]}
+            onChange={(e) => handleGuardianFieldChange(guardianField, e.target.value)}
+            className={`mt-1 block w-full rounded-md shadow-sm ${
+              errors[fieldKey] ? 'border-red-300' : 'border-gray-300'
+            } focus:border-blue-500 focus:ring-blue-500`}
+          />
+          {errors[fieldKey] && <p className="mt-1 text-sm text-red-600">{errors[fieldKey]}</p>}
+        </div>
+      );
+    }
+
+    const studentField = fieldKey as keyof Omit<Student, 'guardian' | 'areas'>;
+    return (
+      <div>
+        <label htmlFor={fieldKey} className="block text-sm font-medium text-gray-700">
+          {label} {field.is_required && <span className="text-red-500">*</span>}
+        </label>
+        <input
+          type={type}
+          id={fieldKey}
+          value={formData[studentField]}
+          onChange={(e) => handleStudentFieldChange(studentField, e.target.value)}
+          className={`mt-1 block w-full rounded-md shadow-sm ${
+            errors[fieldKey] ? 'border-red-300' : 'border-gray-300'
+          } focus:border-blue-500 focus:ring-blue-500`}
+        />
+        {errors[fieldKey] && <p className="mt-1 text-sm text-red-600">{errors[fieldKey]}</p>}
+      </div>
+    );
+  };
+
   return (
     <div className="py-12 bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -98,92 +207,19 @@ export function Registration() {
           <h2 className="text-2xl font-bold text-gray-900 mb-8">Formulario de Inscripción</h2>
           
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Datos del Estudiante */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-700">Datos del Estudiante</h3>
-              
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Nombre Completo
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className={`mt-1 block w-full rounded-md shadow-sm ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
-                  } focus:border-blue-500 focus:ring-blue-500`}
-                />
-                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="ci" className="block text-sm font-medium text-gray-700">
-                  Cédula de Identidad
-                </label>
-                <input
-                  type="text"
-                  id="ci"
-                  value={formData.ci}
-                  onChange={(e) => setFormData({ ...formData, ci: e.target.value })}
-                  className={`mt-1 block w-full rounded-md shadow-sm ${
-                    errors.ci ? 'border-red-300' : 'border-gray-300'
-                  } focus:border-blue-500 focus:ring-blue-500`}
-                />
-                {errors.ci && <p className="mt-1 text-sm text-red-600">{errors.ci}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700">
-                  Fecha de Nacimiento
-                </label>
-                <input
-                  type="date"
-                  id="birthDate"
-                  value={formData.birthDate}
-                  onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                  className={`mt-1 block w-full rounded-md shadow-sm ${
-                    errors.birthDate ? 'border-red-300' : 'border-gray-300'
-                  } focus:border-blue-500 focus:ring-blue-500`}
-                />
-                {errors.birthDate && <p className="mt-1 text-sm text-red-600">{errors.birthDate}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Correo Electrónico
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className={`mt-1 block w-full rounded-md shadow-sm ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
-                  } focus:border-blue-500 focus:ring-blue-500`}
-                />
-                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                  Teléfono
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className={`mt-1 block w-full rounded-md shadow-sm ${
-                    errors.phone ? 'border-red-300' : 'border-gray-300'
-                  } focus:border-blue-500 focus:ring-blue-500`}
-                />
-                {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
-              </div>
+              {renderField('name', 'Nombre Completo')}
+              {renderField('ci', 'Cédula de Identidad')}
+              {renderField('birthDate', 'Fecha de Nacimiento', 'date')}
+              {renderField('email', 'Correo Electrónico', 'email')}
+              {renderField('phone', 'Teléfono', 'tel')}
+              {renderField('school', 'Colegio')}
+              {renderField('grade', 'Curso')}
+              {renderField('city', 'Departamento')}
+              {renderField('province', 'Provincia')}
             </div>
 
-            {/* Áreas de Competencia */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-700">Áreas de Competencia</h3>
               <div className="space-y-2">
@@ -211,72 +247,11 @@ export function Registration() {
               </div>
             </div>
 
-            {/* Datos del Tutor */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-700">Datos del Tutor</h3>
-              
-              <div>
-                <label htmlFor="guardianName" className="block text-sm font-medium text-gray-700">
-                  Nombre Completo
-                </label>
-                <input
-                  type="text"
-                  id="guardianName"
-                  value={formData.guardian.name}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    guardian: { ...formData.guardian, name: e.target.value }
-                  })}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors['guardian.name'] ? 'border-red-300' : ''
-                  }`}
-                />
-                {errors['guardian.name'] && (
-                  <p className="mt-1 text-sm text-red-600">{errors['guardian.name']}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="guardianEmail" className="block text-sm font-medium text-gray-700">
-                  Correo Electrónico
-                </label>
-                <input
-                  type="email"
-                  id="guardianEmail"
-                  value={formData.guardian.email}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    guardian: { ...formData.guardian, email: e.target.value }
-                  })}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors['guardian.email'] ? 'border-red-300' : ''
-                  }`}
-                />
-                {errors['guardian.email'] && (
-                  <p className="mt-1 text-sm text-red-600">{errors['guardian.email']}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="guardianPhone" className="block text-sm font-medium text-gray-700">
-                  Teléfono
-                </label>
-                <input
-                  type="tel"
-                  id="guardianPhone"
-                  value={formData.guardian.phone}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    guardian: { ...formData.guardian, phone: e.target.value }
-                  })}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors['guardian.phone'] ? 'border-red-300' : ''
-                  }`}
-                />
-                {errors['guardian.phone'] && (
-                  <p className="mt-1 text-sm text-red-600">{errors['guardian.phone']}</p>
-                )}
-              </div>
+              {renderField('guardian.name', 'Nombre Completo del Tutor')}
+              {renderField('guardian.email', 'Correo Electrónico del Tutor', 'email')}
+              {renderField('guardian.phone', 'Teléfono del Tutor', 'tel')}
             </div>
 
             <div className="pt-4">
