@@ -35,6 +35,7 @@
     width: 50%;
   
 }
+
 .modal-content{
   display: flex;
   justify-content: space-between;
@@ -45,22 +46,23 @@
   width: 100%;
   height: 100%;
 }
-  .modal-title {
-    font-size: 23px;
-    font-weight: 500;
-  }
 
-  button {
-    height: 50px;
-    width: 100px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
+.modal-title {
+  font-size: 23px;
+  font-weight: 500;
+}
+
+button {
+  height: 50px;
+  width: 100px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}

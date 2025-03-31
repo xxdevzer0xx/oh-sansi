@@ -9,7 +9,6 @@ import Modal from './../components/Modal';
 export function PaymentConfirmation() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  
   const openModal = () => {
     generatePDF(registration)
     setIsModalOpen(true);
@@ -133,7 +132,6 @@ export function PaymentConfirmation() {
                 <Download size={20} />
                 <span>Descargar Comprobante</span>
               </button>
-              
               <Modal isOpen={isModalOpen} onClose={closeModal} />
               <button className="flex items-center justify-center space-x-2 bg-white text-blue-600 px-6 py-3 rounded-md border border-blue-600 hover:bg-blue-50 transition w-full">
                 <Share2 size={20} />

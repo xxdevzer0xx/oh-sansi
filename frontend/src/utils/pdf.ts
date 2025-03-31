@@ -28,5 +28,3 @@ export const generatePDF = async (summary :RegistrationSummary) => {
   const dateParsed = date.getDate() + "-"+ date.getMonth()+ "-" +date.getFullYear(); 
   pdf.save(`Boleta de inscripcion ${dateParsed}.pdf`);
 };
-
-

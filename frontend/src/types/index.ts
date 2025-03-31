@@ -20,9 +20,6 @@ export interface CompetitionArea {
   cost: number;
 }
 
-
-
-
 export interface RegistrationSummary {
   student: Student;
   areas: CompetitionArea[];
