@@ -4,7 +4,9 @@ export interface Student {
   birthDate: string;
   email: string;
   phone: string;
-  areas: string[];
+  colegio: string; // Added field for educational institution
+  gradeId: string; // Added field for grade id
+  areas: string[]; // Added field for department
   guardian: {
     name: string;
     email: string;
@@ -44,6 +46,7 @@ export interface RegistrationSummary {
   totalCost: number;
   paymentStatus: 'pending' | 'completed';
   registrationDate: string;
+  selectedLevels: Level[]; // Changed to array of Level objects
 }
 
 export interface PaymentDetails {

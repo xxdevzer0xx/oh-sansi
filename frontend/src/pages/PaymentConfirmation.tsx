@@ -76,19 +76,48 @@ export function PaymentConfirmation() {
                     <p className="text-sm text-gray-500">Teléfono</p>
                     <p className="font-medium">{registration.student.phone}</p>
                   </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Unidad Educativa</p>
+                    <p className="font-medium">{registration.student.colegio}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Departamento</p>
+                    <p className="font-medium">{registration.student.departamento}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Provincia</p>
+                    <p className="font-medium">{registration.student.provincia}</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Areas */}
+              {/* Areas with Levels */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Áreas de Competencia</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Áreas y Niveles Seleccionados</h3>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  {registration.areas.map((area, index) => (
-                    <div key={area.id} className={`flex justify-between items-center ${index > 0 ? 'mt-3' : ''}`}>
-                      <span className="text-gray-700">{area.name}</span>
-                      <span className="font-medium">{formatCurrency(area.cost)}</span>
+                  {/* Areas */}
+                  <div className="mb-4">
+                    <h4 className="font-medium text-gray-800 mb-2">Áreas de Competencia</h4>
+                    {registration.areas.map((area, index) => (
+                      <div key={area.id} className={`flex justify-between items-center ${index > 0 ? 'mt-2' : ''}`}>
+                        <span className="text-gray-700">{area.name}</span>
+                        <span className="font-medium">{formatCurrency(area.cost)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Levels */}
+                  <div className="mb-4 pt-3 border-t border-gray-200">
+                    <h4 className="font-medium text-gray-800 mb-2">Niveles Seleccionados</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {registration.selectedLevels?.map(level => (
+                        <span key={level.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {level.name}
+                        </span>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                  
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex justify-between items-center font-semibold">
                       <span>Total</span>
