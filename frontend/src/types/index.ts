@@ -1,8 +1,10 @@
-
-export interface Guardian {
-  name: string;
-  email: string;
-  phone: string;
+export interface FormFieldConfig {
+  id?: string;
+  field_name: string;
+  field_key: string;
+  is_required: boolean;
+  is_active: boolean;
+  category: string;
 }
 
 export interface Student {
@@ -16,7 +18,11 @@ export interface Student {
   city: string;
   province: string;
   areas: string[];
-  guardian: Guardian; 
+  guardian: {
+    name: string;
+    email: string;
+    phone: string;
+  };
 }
 
 export interface CompetitionArea {
@@ -31,24 +37,6 @@ export interface RegistrationSummary {
   student: Student;
   areas: CompetitionArea[];
   totalCost: number;
-  paymentStatus: 'pending' | 'completed';
+  paymentStatus: string;
   registrationDate: string;
-}
-
-export interface PaymentDetails {
-  amount: number;
-  currency: string;
-  method: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  transactionId?: string;
-  paymentDate?: string;
-}
-
-export interface FormFieldConfig {
-  id: string;
-  field_name: string;
-  field_key: string;
-  is_required: boolean;
-  is_active: boolean;
-  category: 'student' | 'guardian' | 'competition';
 }
