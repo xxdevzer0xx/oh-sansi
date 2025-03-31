@@ -1,34 +1,30 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Content-Type: application/json; charset=UTF-8");
 
-$servername = "localhost"; // Cambia esto si es necesario
-$username = "root"; // Usuario de la base de datos
-$password = ""; // Contraseña de la base de datos
-$database = "laravel"; // Nombre de la base de datos
+namespace App\Http\Controllers;
 
-$conn = new mysqli($servername, $username, $password, $database);
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
-if ($conn->connect_error) {
-    die(json_encode(["error" => "Conexión fallida: " . $conn->connect_error]));
-}
+class ObtenerMaterias extends Controller
+{
+    /**
+     * Obtener las materias según el grado
+     */
+    public function obtenerMaterias(Request $request): JsonResponse
+    {
+        // Validar que se reciba el parámetro "grado"
+        $request->validate([
+            'grado' => 'required|string'
+        ]);
 
-if (isset($_GET['grado'])) {
-    $grado = $conn->real_escape_string($_GET['grado']);
-    
-    $sql = "SELECT nombre FROM area WHERE grado = '$grado'";
-    $result = $conn->query($sql);
-    
-    $materias = [];
-    while ($row = $result->fetch_assoc()) {
-        $materias[] = $row['nombre'];
+        $grado = $request->input('grado');
+
+        // Obtener las materias disponibles para ese grado
+        $materias = DB::table('area')
+            ->where('grado', $grado)
+            ->pluck('nombre');
+
+        return response()->json(["materias" => $materias], 200);
     }
-    
-    echo json_encode(["materias" => $materias]);
-} else {
-    echo json_encode(["error" => "Grado no especificado"]);
 }
-
-$conn->close();

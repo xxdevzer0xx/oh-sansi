@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 
 const grados = ['3roPrimaria', '4toPrimaria', '5toPrimaria', '6toPrimaria', '1roSecundaria', '2doSecundaria', '3roSecundaria', '4toSecundaria', '5toSecundaria', '6toSecundaria'];
 
-const Modal = ({ isOpen, onClose, selectedMaterias, handleMateriaChange }: {
+const Modal = ({ isOpen, onClose, materiasDisponibles, selectedMaterias, handleMateriaChange }: {
+
+
   isOpen: boolean;
   onClose: () => void;
+  materiasDisponibles: string[];
   selectedMaterias: string[];
   handleMateriaChange: (materia: string) => void;
 }) => {
@@ -16,7 +19,7 @@ const Modal = ({ isOpen, onClose, selectedMaterias, handleMateriaChange }: {
         <h2 className="text-xl font-semibold mb-4">Selecciona tus Materias</h2>
         <p className="mb-2">Puedes seleccionar hasta 2 materias.</p>
         <div className="grid grid-cols-2 gap-2">
-          {selectedMaterias.map((materia) => (
+        {materiasDisponibles.map((materia) => (
             <label key={materia} className="flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -29,8 +32,11 @@ const Modal = ({ isOpen, onClose, selectedMaterias, handleMateriaChange }: {
           ))}
         </div>
         <div className="mt-4 flex justify-end space-x-4">
-          <button className="px-4 py-2 bg-gray-300 rounded" onClick={onClose}>Cancelar</button>
-          <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={onClose}>Aceptar</button>
+          <button 
+            className={`px-4 py-2 rounded ${selectedMaterias.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white'}`}
+            onClick={onClose}
+            disabled={selectedMaterias.length === 0}
+          >Aceptar</button>
         </div>
       </div>
     </div>
@@ -47,9 +53,10 @@ export function CompForm() {
   useEffect(() => {
     const fetchMaterias = async () => {
       try {
-        const response = await fetch(`http://localhost/api/obtener-materias?grado=${grado}`);
+        const response = await fetch(`http://127.0.0.1:8000/api/obtener-materias?grado=${grado}`);
         const data = await response.json();
         setMateriasDisponibles(data.materias);
+        setSelectedMaterias([]);
       } catch (error) {
         console.error("Error obteniendo materias:", error);
       }
@@ -83,7 +90,7 @@ export function CompForm() {
         {grados.map(g => <option key={g} value={g}>{g}</option>)}
       </select>
       
-      <h3 className="text-lg font-semibold mb-2">Materias a Competir</h3>
+      <h3 className="text-lg font-semibold mb-2">Areas a Competir</h3>
       {selectedMaterias.length > 0 ? (
         <ul className="mb-4">
           {selectedMaterias.map((materia) => (
@@ -98,7 +105,11 @@ export function CompForm() {
         Elegir Áreas de Competencia
       </button>
       
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} selectedMaterias={materiasDisponibles} handleMateriaChange={handleMateriaChange} />
+      <Modal isOpen={modalOpen}
+      onClose={() => setModalOpen(false)} 
+      materiasDisponibles={materiasDisponibles}
+      selectedMaterias={selectedMaterias} 
+      handleMateriaChange={handleMateriaChange} />
     </div>
   );
 }
