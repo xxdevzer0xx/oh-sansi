@@ -2,8 +2,21 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, ArrowLeft, Download, Share2 } from 'lucide-react';
 import type { RegistrationSummary } from '../types';
+import { generatePDF } from "./../utils/pdf";
+import  { useState } from 'react';
+import Modal from './../components/Modal';
 
 export function PaymentConfirmation() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const openModal = () => {
+    generatePDF(registration)
+    setIsModalOpen(true);
+  };
+  
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
   const location = useLocation();
   const navigate = useNavigate();
   const registration = location.state?.registration as RegistrationSummary;
@@ -76,19 +89,48 @@ export function PaymentConfirmation() {
                     <p className="text-sm text-gray-500">Teléfono</p>
                     <p className="font-medium">{registration.student.phone}</p>
                   </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Unidad Educativa</p>
+                    <p className="font-medium">{registration.student.colegio}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Departamento</p>
+                    <p className="font-medium">{registration.student.departamento}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Provincia</p>
+                    <p className="font-medium">{registration.student.provincia}</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Areas */}
+              {/* Areas with Levels */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Áreas de Competencia</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Áreas y Niveles Seleccionados</h3>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  {registration.areas.map((area, index) => (
-                    <div key={area.id} className={`flex justify-between items-center ${index > 0 ? 'mt-3' : ''}`}>
-                      <span className="text-gray-700">{area.name}</span>
-                      <span className="font-medium">{formatCurrency(area.cost)}</span>
+                  {/* Areas */}
+                  <div className="mb-4">
+                    <h4 className="font-medium text-gray-800 mb-2">Áreas de Competencia</h4>
+                    {registration.areas.map((area, index) => (
+                      <div key={area.id} className={`flex justify-between items-center ${index > 0 ? 'mt-2' : ''}`}>
+                        <span className="text-gray-700">{area.name}</span>
+                        <span className="font-medium">{formatCurrency(area.cost)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Levels */}
+                  <div className="mb-4 pt-3 border-t border-gray-200">
+                    <h4 className="font-medium text-gray-800 mb-2">Niveles Seleccionados</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {registration.selectedLevels?.map(level => (
+                        <span key={level.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {level.name}
+                        </span>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                  
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex justify-between items-center font-semibold">
                       <span>Total</span>
@@ -115,10 +157,11 @@ export function PaymentConfirmation() {
 
             {/* Actions */}
             <div className="mt-8 space-y-4">
-              <button className="flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition w-full">
+              <button className="flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition w-full" onClick={openModal} >
                 <Download size={20} />
                 <span>Descargar Comprobante</span>
               </button>
+              <Modal isOpen={isModalOpen} onClose={closeModal} />
               <button className="flex items-center justify-center space-x-2 bg-white text-blue-600 px-6 py-3 rounded-md border border-blue-600 hover:bg-blue-50 transition w-full">
                 <Share2 size={20} />
                 <span>Compartir Inscripción</span>
