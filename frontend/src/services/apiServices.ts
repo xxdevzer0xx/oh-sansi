@@ -31,6 +31,16 @@ export const deleteNivel = async (id: string) => {
   }
 };
 
+export const updateNivel = async (id: string, nombre: string) => {
+  try {
+    const response = await api.put(`/niveles/${id}`, { nombre });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating nivel:', error);
+    throw error;
+  }
+};
+
 // GRADOS
 export const getGrados = async () => {
   try {
@@ -58,6 +68,16 @@ export const deleteGrado = async (id: string) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting grado:', error);
+    throw error;
+  }
+};
+
+export const updateGrado = async (id: string, nombre: string) => {
+  try {
+    const response = await api.put(`/grados/${id}`, { nombre });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating grado:', error);
     throw error;
   }
 };
@@ -93,6 +113,16 @@ export const deleteArea = async (id: string) => {
   }
 };
 
+export const updateArea = async (id: string, nombre: string, descripcion: string) => {
+  try {
+    const response = await api.put(`/areas/${id}`, { nombre, descripcion });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating area:', error);
+    throw error;
+  }
+};
+
 // COSTOS
 export const getCostos = async () => {
   try {
@@ -120,6 +150,16 @@ export const deleteCosto = async (id: string) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting costo:', error);
+    throw error;
+  }
+};
+
+export const updateCosto = async (id: string, Id_area: string, Id_nivel: string, monto: number) => {
+  try {
+    const response = await api.put(`/costos/${id}`, { Id_area, Id_nivel, monto });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating costo:', error);
     throw error;
   }
 };

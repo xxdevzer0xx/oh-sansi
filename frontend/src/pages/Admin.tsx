@@ -36,7 +36,15 @@ import {
   getNiveles,
   getGrados, 
   getAreas,
-  getCostos
+  getCostos,
+  deleteNivel,
+  deleteGrado,
+  deleteArea,
+  deleteCosto,
+  updateNivel,
+  updateGrado,
+  updateArea,
+  updateCosto
 } from '../services/apiServices';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
@@ -77,6 +85,12 @@ export function Admin() {
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+
+  // Add edit states
+  const [editLevel, setEditLevel] = useState<{id: string, name: string} | null>(null);
+  const [editGrade, setEditGrade] = useState<{id: string, name: string} | null>(null);
+  const [editArea, setEditArea] = useState<{id: string, name: string, description: string} | null>(null);
+  const [editAreaCost, setEditAreaCost] = useState<{id: string, areaId: string, levelId: string, cost: number} | null>(null);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -388,25 +402,189 @@ export function Admin() {
     }
   };
 
-  const StatCard = ({ icon: Icon, title, value, trend }: any) => (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-500 text-sm">{title}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
-          {trend && (
-            <p className="text-green-500 text-sm mt-1 flex items-center">
-              <TrendingUp size={16} className="mr-1" />
-              {trend}
-            </p>
-          )}
-        </div>
-        <div className="bg-blue-50 p-3 rounded-full">
-          <Icon size={24} className="text-blue-600" />
-        </div>
-      </div>
-    </div>
-  );
+  // Delete handlers
+  const handleDeleteLevel = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar este nivel?')) return;
+    
+    try {
+      const response = await deleteNivel(id);
+      if (response.status === 'success') {
+        // Update the levels list after successful deletion
+        setLevels(prevLevels => prevLevels.filter(level => level.id !== id));
+        setFormSuccess('Nivel eliminado correctamente');
+      } else {
+        setFormError(response.message || 'Error al eliminar el nivel');
+      }
+    } catch (error: any) {
+      console.error('Error deleting level:', error);
+      setFormError(error.response?.data?.message || 'Error al eliminar el nivel');
+    }
+  };
+
+  const handleDeleteGrade = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar este grado?')) return;
+    
+    try {
+      const response = await deleteGrado(id);
+      if (response.status === 'success') {
+        // Update the grades list after successful deletion
+        setGrades(prevGrades => prevGrades.filter(grade => grade.id !== id));
+        setFormSuccess('Grado eliminado correctamente');
+      } else {
+        setFormError(response.message || 'Error al eliminar el grado');
+      }
+    } catch (error: any) {
+      console.error('Error deleting grade:', error);
+      setFormError(error.response?.data?.message || 'Error al eliminar el grado');
+    }
+  };
+
+  const handleDeleteArea = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar esta área?')) return;
+    
+    try {
+      const response = await deleteArea(id);
+      if (response.status === 'success') {
+        // Update the areas list after successful deletion
+        setAreas(prevAreas => prevAreas.filter(area => area.id !== id));
+        setFormSuccess('Área eliminada correctamente');
+      } else {
+        setFormError(response.message || 'Error al eliminar el área');
+      }
+    } catch (error: any) {
+      console.error('Error deleting area:', error);
+      setFormError(error.response?.data?.message || 'Error al eliminar el área');
+    }
+  };
+
+  const handleDeleteAreaCost = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar este costo?')) return;
+    
+    try {
+      const response = await deleteCosto(id);
+      if (response.status === 'success') {
+        // Update the areaCosts list after successful deletion
+        setAreaCosts(prevCosts => prevCosts.filter(cost => cost.id !== id));
+        setFormSuccess('Costo eliminado correctamente');
+      } else {
+        setFormError(response.message || 'Error al eliminar el costo');
+      }
+    } catch (error: any) {
+      console.error('Error deleting cost:', error);
+      setFormError(error.response?.data?.message || 'Error al eliminar el costo');
+    }
+  };
+
+  // Edit handlers
+  const handleEditLevelSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editLevel) return;
+    
+    try {
+      const response = await updateNivel(editLevel.id, editLevel.name);
+      
+      if (response.status === 'success') {
+        setLevels(prevLevels => 
+          prevLevels.map(level => 
+            level.id === editLevel.id ? { ...level, name: editLevel.name } : level
+          )
+        );
+        setEditLevel(null);
+        setFormSuccess('Nivel actualizado correctamente');
+      } else {
+        setFormError(response.message || 'Error al actualizar el nivel');
+      }
+    } catch (error: any) {
+      console.error('Error updating level:', error);
+      setFormError('Error al actualizar el nivel');
+    }
+  };
+
+  const handleEditGradeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editGrade) return;
+    
+    try {
+      const response = await updateGrado(editGrade.id, editGrade.name);
+      
+      if (response.status === 'success') {
+        setGrades(prevGrades => 
+          prevGrades.map(grade => 
+            grade.id === editGrade.id ? { ...grade, name: editGrade.name } : grade
+          )
+        );
+        setEditGrade(null);
+        setFormSuccess('Grado actualizado correctamente');
+      } else {
+        setFormError(response.message || 'Error al actualizar el grado');
+      }
+    } catch (error: any) {
+      console.error('Error updating grade:', error);
+      setFormError('Error al actualizar el grado');
+    }
+  };
+
+  const handleEditAreaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editArea) return;
+    
+    try {
+      const response = await updateArea(editArea.id, editArea.name, editArea.description);
+      
+      if (response.status === 'success') {
+        setAreas(prevAreas => 
+          prevAreas.map(area => 
+            area.id === editArea.id ? { 
+              ...area, 
+              name: editArea.name, 
+              description: editArea.description 
+            } : area
+          )
+        );
+        setEditArea(null);
+        setFormSuccess('Área actualizada correctamente');
+      } else {
+        setFormError(response.message || 'Error al actualizar el área');
+      }
+    } catch (error: any) {
+      console.error('Error updating area:', error);
+      setFormError('Error al actualizar el área');
+    }
+  };
+
+  const handleEditAreaCostSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editAreaCost) return;
+    
+    try {
+      const response = await updateCosto(
+        editAreaCost.id, 
+        editAreaCost.areaId, 
+        editAreaCost.levelId, 
+        editAreaCost.cost
+      );
+      
+      if (response.status === 'success') {
+        setAreaCosts(prevCosts => 
+          prevCosts.map(cost => 
+            cost.id === editAreaCost.id ? { 
+              ...cost, 
+              areaId: editAreaCost.areaId,
+              levelId: editAreaCost.levelId,
+              cost: editAreaCost.cost
+            } : cost
+          )
+        );
+        setEditAreaCost(null);
+        setFormSuccess('Costo actualizado correctamente');
+      } else {
+        setFormError(response.message || 'Error al actualizar el costo');
+      }
+    } catch (error: any) {
+      console.error('Error updating cost:', error);
+      setFormError('Error al actualizar el costo');
+    }
+  };
 
   if (loading) {
     return (
@@ -557,7 +735,10 @@ export function Admin() {
                     <div key={level.id} className="flex justify-between items-center">
                       <span>{level.name}</span>
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-800">
+                        <button 
+                          className="text-blue-600 hover:text-blue-800"
+                          onClick={() => setEditLevel(level)}
+                        >
                           <Edit size={18} />
                         </button>
                         <button 
@@ -588,7 +769,10 @@ export function Admin() {
                     <div key={grade.id} className="flex justify-between items-center">
                       <span>{grade.name}</span>
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-800">
+                        <button 
+                          className="text-blue-600 hover:text-blue-800"
+                          onClick={() => setEditGrade(grade)}
+                        >
                           <Edit size={18} />
                         </button>
                         <button 
@@ -627,7 +811,10 @@ export function Admin() {
                         <div className="flex items-center space-x-4">
                           <span className="font-medium">Bs. {areaCost.cost}</span>
                           <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-800">
+                            <button 
+                              className="text-blue-600 hover:text-blue-800"
+                              onClick={() => setEditAreaCost(areaCost)}
+                            >
                               <Edit size={18} />
                             </button>
                             <button 
@@ -856,6 +1043,206 @@ export function Admin() {
           </form>
         </ModalPortal>
 
+        {/* Edit Level Modal */}
+        <ModalPortal 
+          title="Editar Nivel"
+          isOpen={editLevel !== null}
+          onClose={() => setEditLevel(null)}
+        >
+          <form onSubmit={handleEditLevelSubmit} className="space-y-4">
+            {formError && (
+              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+                {formError}
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Nombre del Nivel</label>
+              <input 
+                type="text"
+                value={editLevel?.name || ''}
+                onChange={(e) => setEditLevel(prev => prev ? {...prev, name: e.target.value} : null)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Ej: Básico"
+              />
+            </div>
+            <div className="flex justify-end space-x-3 mt-4">
+              <button
+                type="button"
+                onClick={() => setEditLevel(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Guardar
+              </button>
+            </div>
+          </form>
+        </ModalPortal>
+
+        {/* Edit Grade Modal */}
+        <ModalPortal 
+          title="Editar Grado"
+          isOpen={editGrade !== null}
+          onClose={() => setEditGrade(null)}
+        >
+          <form onSubmit={handleEditGradeSubmit} className="space-y-4">
+            {formError && (
+              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+                {formError}
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Nombre del Grado</label>
+              <input 
+                type="text"
+                value={editGrade?.name || ''}
+                onChange={(e) => setEditGrade(prev => prev ? {...prev, name: e.target.value} : null)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Ej: Primero"
+              />
+            </div>
+            <div className="flex justify-end space-x-3 mt-4">
+              <button
+                type="button"
+                onClick={() => setEditGrade(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Guardar
+              </button>
+            </div>
+          </form>
+        </ModalPortal>
+
+        {/* Edit Area Modal */}
+        <ModalPortal 
+          title="Editar Área"
+          isOpen={editArea !== null}
+          onClose={() => setEditArea(null)}
+        >
+          <form onSubmit={handleEditAreaSubmit} className="space-y-4">
+            {formError && (
+              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+                {formError}
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Nombre del Área</label>
+              <input 
+                type="text"
+                value={editArea?.name || ''}
+                onChange={(e) => setEditArea(prev => prev ? {...prev, name: e.target.value} : null)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Ej: Matemáticas"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Descripción</label>
+              <textarea
+                value={editArea?.description || ''}
+                onChange={(e) => setEditArea(prev => prev ? {...prev, description: e.target.value} : null)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                rows={3}
+                placeholder="Descripción del área..."
+              />
+            </div>
+            <div className="flex justify-end space-x-3 mt-4">
+              <button
+                type="button"
+                onClick={() => setEditArea(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Guardar
+              </button>
+            </div>
+          </form>
+        </ModalPortal>
+
+        {/* Edit Area Cost Modal */}
+        <ModalPortal 
+          title="Editar Costo"
+          isOpen={editAreaCost !== null}
+          onClose={() => setEditAreaCost(null)}
+        >
+          <form onSubmit={handleEditAreaCostSubmit} className="space-y-4">
+            {formError && (
+              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+                {formError}
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Área</label>
+              <select
+                value={editAreaCost?.areaId || ''}
+                onChange={(e) => setEditAreaCost(prev => prev ? {...prev, areaId: e.target.value} : null)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="">Seleccione un área</option>
+                {areas.map(area => (
+                  <option key={area.id} value={area.id}>{area.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Nivel</label>
+              <select
+                value={editAreaCost?.levelId || ''}
+                onChange={(e) => setEditAreaCost(prev => prev ? {...prev, levelId: e.target.value} : null)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="">Seleccione un nivel</option>
+                {levels.map(level => (
+                  <option key={level.id} value={level.id}>{level.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Costo (Bs.)</label>
+              <input
+                type="number"
+                value={editAreaCost?.cost || ''}
+                onChange={(e) => setEditAreaCost(prev => 
+                  prev ? {...prev, cost: parseFloat(e.target.value)} : null
+                )}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Ej: 150"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div className="flex justify-end space-x-3 mt-4">
+              <button
+                type="button"
+                onClick={() => setEditAreaCost(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Guardar
+              </button>
+            </div>
+          </form>
+        </ModalPortal>
+
         {selectedRegistration && (
           <StudentDetails
             registration={selectedRegistration}
@@ -863,6 +1250,22 @@ export function Admin() {
           />
         )}
       </div>
+    </div>
+  );
+}
+
+// Make sure StatCard is defined if it's not imported
+function StatCard({ icon: Icon, title, value, trend }: { icon: any, title: string, value: string | number, trend?: string }) {
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="flex items-center mb-3">
+        <div className="bg-blue-100 p-2 rounded">
+          <Icon className="h-6 w-6 text-blue-600" />
+        </div>
+        <h3 className="ml-3 text-lg font-medium text-gray-900">{title}</h3>
+      </div>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      {trend && <p className="mt-1 text-sm text-green-600">{trend}</p>}
     </div>
   );
 }
