@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, ArrowLeft, Download, Share2 } from 'lucide-react';
 import type { RegistrationSummary } from '../types';
-
+import { generatePDF } from "./../utils/pdf";
 import  { useState } from 'react';
 import Modal from './../components/Modal';
 
@@ -11,6 +11,7 @@ export function PaymentConfirmation() {
   
   
   const openModal = () => {
+    generatePDF(registration)
     setIsModalOpen(true);
   };
   
