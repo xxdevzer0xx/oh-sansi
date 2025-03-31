@@ -7,14 +7,12 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
-  // Si el modal no está abierto, no renderizar nada
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-content bg-blue">
-
           <p className="warning-icon">!</p>
           <p className="modal-title">¡ESPERE!</p>
           <p className="modal-title">USTED TODAVIA NO ESTA INSCRITO AUN!!!
