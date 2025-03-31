@@ -28,6 +28,16 @@ import { StudentList } from '../components/admin/StudentList';
 import { StudentDetails } from '../components/admin/StudentDetails';
 import { API_BASE_URL } from '../config';
 import { ModalPortal } from '../components/ModalPortal';
+import { 
+  createNivel, 
+  createGrado, 
+  createArea, 
+  createCosto,
+  getNiveles,
+  getGrados, 
+  getAreas,
+  getCostos
+} from '../services/apiServices';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
@@ -60,7 +70,13 @@ export function Admin() {
   const [newLevel, setNewLevel] = useState('');
   const [newGrade, setNewGrade] = useState('');
   const [newArea, setNewArea] = useState({ nombre: '', descripcion: '' });
-  const [areaCostAmount, setAreaCostAmount] = useState('');
+  const [newAreaCost, setNewAreaCost] = useState({
+    areaId: '',
+    levelId: '',
+    amount: ''
+  });
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -205,109 +221,170 @@ export function Admin() {
     fetchData();
   }, []);
 
-  // Funciones simplificadas para manejar los modales - sin lógica de guardado
-  const handleAddLevel = (e: React.FormEvent) => {
+  // Funciones actualizadas para manejar los modales con llamadas API
+  const handleAddLevel = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Nuevo nivel:", newLevel);
-    setNewLevel('');
-    setShowAddLevel(false);
-  };
-
-  const handleAddGrade = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Nuevo grado:", newGrade);
-    setNewGrade('');
-    setShowAddGrade(false);
-  };
-
-  const handleAddArea = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Nueva área:", newArea);
-    setNewArea({ nombre: '', descripcion: '' });
-    setShowAddArea(false);
-  };
-
-  const handleAddAreaCost = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Nuevo costo:", areaCostAmount);
-    setAreaCostAmount('');
-    setShowAddAreaCost(false);
-  };
-
-  // Mantener las funciones de eliminación
-  const handleDeleteLevel = async (id: string) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este nivel?')) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/niveles/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
+    setFormError(null);
+    setFormSuccess(null);
+    
+    if (!newLevel.trim()) {
+      setFormError('El nombre del nivel es requerido');
+      return;
+    }
+    
+    try {
+      const response = await createNivel(newLevel);
+      if (response.status === 'success') {
+        setFormSuccess('Nivel creado exitosamente');
+        setNewLevel('');
+        setShowAddLevel(false);
         
-        const data = await response.json();
-        
-        if (response.ok) {
-          // Actualizar la lista de niveles
-          setLevels(levels.filter(level => level.id !== id));
-          alert('Nivel eliminado con éxito');
-        } else {
-          alert(`Error: ${data.message || 'No se pudo eliminar el nivel'}`);
+        // Actualizar la lista de niveles
+        const updatedLevels = await getNiveles();
+        if (updatedLevels.status === 'success') {
+          const formattedLevels = updatedLevels.data.map((nivel: any) => ({
+            id: nivel.Id_nivel.toString(),
+            name: nivel.nombre
+          }));
+          setLevels(formattedLevels);
         }
-      } catch (error) {
-        console.error('Error deleting level:', error);
-        alert('Hubo un error al eliminar el nivel');
+      } else {
+        setFormError(response.message || 'Error al crear nivel');
       }
+    } catch (error: any) {
+      console.error('Error creating level:', error);
+      setFormError(error.response?.data?.message || 'Error al conectar con el servidor');
     }
   };
 
-  const handleDeleteGrade = async (id: string) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este grado?')) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/grados/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
+  const handleAddGrade = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    setFormSuccess(null);
+    
+    if (!newGrade.trim()) {
+      setFormError('El nombre del grado es requerido');
+      return;
+    }
+    
+    try {
+      const response = await createGrado(newGrade);
+      if (response.status === 'success') {
+        setFormSuccess('Grado creado exitosamente');
+        setNewGrade('');
+        setShowAddGrade(false);
         
-        const data = await response.json();
-        
-        if (response.ok) {
-          // Actualizar la lista de grados
-          setGrades(grades.filter(grade => grade.id !== id));
-          alert('Grado eliminado con éxito');
-        } else {
-          alert(`Error: ${data.message || 'No se pudo eliminar el grado'}`);
+        // Actualizar la lista de grados
+        const updatedGrades = await getGrados();
+        if (updatedGrades.status === 'success') {
+          const formattedGrades = updatedGrades.data.map((grado: any) => ({
+            id: grado.Id_grado.toString(),
+            name: grado.nombre
+          }));
+          setGrades(formattedGrades);
         }
-      } catch (error) {
-        console.error('Error deleting grade:', error);
-        alert('Hubo un error al eliminar el grado');
+      } else {
+        setFormError(response.message || 'Error al crear grado');
       }
+    } catch (error: any) {
+      console.error('Error creating grade:', error);
+      setFormError(error.response?.data?.message || 'Error al conectar con el servidor');
     }
   };
 
-  const handleDeleteAreaCost = async (id: string) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este costo?')) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/costos/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
+  const handleAddArea = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    setFormSuccess(null);
+    
+    if (!newArea.nombre.trim()) {
+      setFormError('El nombre del área es requerido');
+      return;
+    }
+    
+    try {
+      const response = await createArea(newArea.nombre, newArea.descripcion);
+      if (response.status === 'success') {
+        setFormSuccess('Área creada exitosamente');
+        setNewArea({ nombre: '', descripcion: '' });
+        setShowAddArea(false);
         
-        if (response.ok) {
-          // Actualizar la lista de costos
-          setAreaCosts(areaCosts.filter(cost => cost.id !== id));
-        } else {
-          const data = await response.json();
-          alert(`Error: ${data.message || 'No se pudo eliminar el costo'}`);
+        // Actualizar la lista de áreas
+        const updatedAreas = await getAreas();
+        if (updatedAreas.status === 'success') {
+          const formattedAreas = updatedAreas.data.map((area: any) => ({
+            id: area.Id_area.toString(),
+            name: area.nombre,
+            description: area.descripcion || '',
+            level: '',
+            cost: 0
+          }));
+          setAreas(formattedAreas);
         }
-      } catch (error) {
-        console.error('Error deleting cost:', error);
-        alert('Hubo un error al eliminar el costo');
+      } else {
+        setFormError(response.message || 'Error al crear área');
       }
+    } catch (error: any) {
+      console.error('Error creating area:', error);
+      setFormError(error.response?.data?.message || 'Error al conectar con el servidor');
+    }
+  };
+
+  const handleAddAreaCost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    setFormSuccess(null);
+    
+    if (!newAreaCost.areaId) {
+      setFormError('Debe seleccionar un área');
+      return;
+    }
+    
+    if (!newAreaCost.levelId) {
+      setFormError('Debe seleccionar un nivel');
+      return;
+    }
+    
+    if (!newAreaCost.amount || parseFloat(newAreaCost.amount) <= 0) {
+      setFormError('El monto debe ser mayor a 0');
+      return;
+    }
+    
+    try {
+      const response = await createCosto(
+        newAreaCost.areaId, 
+        newAreaCost.levelId, 
+        parseFloat(newAreaCost.amount)
+      );
+      
+      if (response.status === 'success') {
+        setFormSuccess('Costo creado exitosamente');
+        setNewAreaCost({
+          areaId: '',
+          levelId: '',
+          amount: ''
+        });
+        setShowAddAreaCost(false);
+        
+        // Actualizar la lista de costos
+        const updatedCosts = await getCostos();
+        if (updatedCosts.status === 'success') {
+          const formattedCosts = updatedCosts.data.map((costo: any) => ({
+            id: costo.Id_costo.toString(),
+            areaId: costo.Id_area.toString(),
+            levelId: costo.Id_nivel.toString(),
+            cost: costo.monto
+          }));
+          setAreaCosts(formattedCosts);
+        }
+      } else {
+        setFormError(response.message || 'Error al crear costo');
+      }
+    } catch (error: any) {
+      console.error('Error creating cost:', error);
+      setFormError(
+        error.response?.data?.message || 'Error al conectar con el servidor'
+      );
     }
   };
 
@@ -587,6 +664,11 @@ export function Admin() {
           onClose={() => setShowAddLevel(false)}
         >
           <form onSubmit={handleAddLevel} className="space-y-4">
+            {formError && (
+              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+                {formError}
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre del Nivel</label>
               <input 
@@ -621,6 +703,11 @@ export function Admin() {
           onClose={() => setShowAddGrade(false)}
         >
           <form onSubmit={handleAddGrade} className="space-y-4">
+            {formError && (
+              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+                {formError}
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre del Grado</label>
               <input
@@ -655,6 +742,11 @@ export function Admin() {
           onClose={() => setShowAddArea(false)}
         >
           <form onSubmit={handleAddArea} className="space-y-4">
+            {formError && (
+              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+                {formError}
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre del Área</label>
               <input
@@ -699,16 +791,53 @@ export function Admin() {
           onClose={() => setShowAddAreaCost(false)}
         >
           <form onSubmit={handleAddAreaCost} className="space-y-4">
+            {formError && (
+              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+                {formError}
+              </div>
+            )}
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Área</label>
+              <select
+                value={newAreaCost.areaId}
+                onChange={(e) => setNewAreaCost({...newAreaCost, areaId: e.target.value})}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="">Seleccione un área</option>
+                {areas.map(area => (
+                  <option key={area.id} value={area.id}>{area.name}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Nivel</label>
+              <select
+                value={newAreaCost.levelId}
+                onChange={(e) => setNewAreaCost({...newAreaCost, levelId: e.target.value})}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="">Seleccione un nivel</option>
+                {levels.map(level => (
+                  <option key={level.id} value={level.id}>{level.name}</option>
+                ))}
+              </select>
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700">Costo (Bs.)</label>
               <input
                 type="number"
-                value={areaCostAmount}
-                onChange={(e) => setAreaCostAmount(e.target.value)}
+                value={newAreaCost.amount}
+                onChange={(e) => setNewAreaCost({...newAreaCost, amount: e.target.value})}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 placeholder="Ej: 150"
+                min="0"
+                step="0.01"
               />
             </div>
+            
             <div className="flex justify-end space-x-3 mt-4">
               <button
                 type="button"
