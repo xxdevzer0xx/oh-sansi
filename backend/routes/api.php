@@ -55,6 +55,7 @@ Route::post('login', [AuthController::class, 'login']);
     Route::apiResource('costos', CostoController::class);
     Route::apiResource('tutores', TutorController::class);
     Route::apiResource('competidores', CompetidorController::class);
+    Route::get('/competidores/check', 'App\Http\Controllers\API\CompetidorController@checkExists');
     Route::apiResource('inscripciones', InscripcionController::class);
     Route::apiResource('pagos', PagoController::class);
     Route::apiResource('usuarios', UsuarioController::class);

@@ -4,6 +4,7 @@ import type { Student, CompetitionArea, RegistrationSummary, Grade, Level } from
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
 import { getGrados, getNiveles } from '../services/apiServices';
+import { createTutor, createCompetidor, createInscripcion, checkCompetidorExists } from '../services/inscripcionService';
 
 const initialFormData: Student = {
   name: '',
@@ -189,13 +190,54 @@ export function Registration() {
     e.preventDefault();
     if (validateForm()) {
       try {
+        // Prepare data
         const selectedAreas = availableAreas.filter((area) => formData.areas.includes(area.id));
         const selectedLevelObjects = availableLevels.filter((level) => selectedLevels.includes(level.id));
         const totalCost = calculateTotalCost(selectedAreas, selectedLevelObjects);
 
+        // Log for debugging
+        console.log("Starting registration process...");
+        
+        // Verificar si ya existe un competidor con el mismo CI
+        const ciCheck = await checkCompetidorExists(formData.ci);
+        if (ciCheck.data?.exists) {
+          throw new Error("Ya existe un competidor registrado con este número de CI. Por favor, use otro o contáctenos si cree que esto es un error.");
+        }
+
+        // STEP 1: Create tutor first (no dependencies)
+        const tutorData = {
+          nombre: formData.guardian.name.split(' ')[0] || formData.guardian.name,
+          apellido: formData.guardian.name.split(' ').slice(1).join(' ') || '',
+          tipo_tutor: 'Familiar',
+          telefono: formData.guardian.phone,
+          email: formData.guardian.email,
+        };
+
+        console.log("Creating tutor with data:", tutorData);
+        
+        let tutorId;
+        try {
+          const tutorResponse = await createTutor(tutorData);
+          if (tutorResponse.status !== 'success') {
+            throw new Error(tutorResponse.message || "Error al crear tutor");
+          }
+          
+          tutorId = tutorResponse.data.Id_tutor;
+          console.log("Tutor created successfully with ID:", tutorId);
+        } catch (tutorError) {
+          console.error("Tutor creation error:", tutorError);
+          throw new Error(`Error al crear tutor: ${tutorError.message || JSON.stringify(tutorError)}`);
+        }
+
+        // STEP 2: Create competitor
+        // Importante: asegurarse de que los nombres y apellidos se separen correctamente
+        const nameParts = formData.name.split(' ');
+        const nombre = nameParts[0] || '';
+        const apellido = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+        
         const competidorData = {
-          nombre: formData.name.split(' ')[0] || formData.name,
-          apellido: formData.name.split(' ').slice(1).join(' ') || '',
+          nombre: nombre,
+          apellido: apellido,
           email: formData.email,
           ci: formData.ci,
           fecha_nacimiento: formData.birthDate,
@@ -205,57 +247,84 @@ export function Registration() {
           provincia: formData.provincia,
         };
 
-        const competidorResponse = await axios.post(`${API_BASE_URL}/competidores`, competidorData);
+        console.log("Creating competitor with data:", competidorData);
+        
+        let competidorId;
+        try {
+          const competidorResponse = await createCompetidor(competidorData);
+          if (competidorResponse.status !== 'success') {
+            throw new Error(competidorResponse.message || "Error al crear competidor");
+          }
+          
+          competidorId = competidorResponse.data.Id_competidor;
+          console.log("Competitor created successfully with ID:", competidorId);
+        } catch (competidorError) {
+          console.error("Competitor creation error:", competidorError);
+          throw new Error(`Error al crear competidor: ${competidorError.message || JSON.stringify(competidorError)}`);
+        }
 
-        if (competidorResponse.data.status === 'success') {
-          const tutorData = {
-            nombre: formData.guardian.name.split(' ')[0] || formData.guardian.name,
-            apellido: formData.guardian.name.split(' ').slice(1).join(' ') || '',
-            tipo_tutor: 'Familiar',
-            telefono: formData.guardian.phone,
-            email: formData.guardian.email,
-          };
-
-          const tutorResponse = await axios.post(`${API_BASE_URL}/tutores`, tutorData);
-
-          if (tutorResponse.data.status === 'success') {
-            const inscripciones = [];
-
-            for (const areaId of formData.areas) {
-              for (const levelId of selectedLevels) {
-                const inscripcionData = {
-                  Id_competidor: competidorResponse.data.data.Id_competidor,
-                  Id_tutor: tutorResponse.data.data.Id_tutor,
-                  Id_area: areaId,
-                  Id_nivel: levelId,
-                  Id_grado: formData.gradeId,
-                  estado: 'Pendiente',
-                };
-
-                const inscripcionResponse = await axios.post(`${API_BASE_URL}/inscripciones`, inscripcionData);
-                inscripciones.push(inscripcionResponse.data.data);
-              }
-            }
-
-            const registrationSummary: RegistrationSummary = {
-              id: inscripciones.length > 0 ? inscripciones[0].Id_inscripcion : 'temp-id',
-              student: formData,
-              areas: selectedAreas.map((area) => ({
-                ...area,
-                level: availableLevels.find((lvl) => selectedLevels.includes(lvl.id))?.name || area.level,
-              })),
-              totalCost,
-              paymentStatus: 'pending',
-              registrationDate: new Date().toISOString(),
-              selectedLevels,
+        // STEP 3: Create inscriptions
+        const inscripciones = [];
+        
+        for (const areaId of formData.areas) {
+          for (const levelId of selectedLevels) {
+            const inscripcionData = {
+              Id_competidor: competidorId,
+              Id_tutor: tutorId,
+              Id_area: parseInt(areaId),
+              Id_nivel: parseInt(levelId),
+              Id_grado: parseInt(formData.gradeId),
+              estado: 'Pendiente',
+              fecha: new Date().toISOString().split('T')[0]
             };
 
-            navigate('/confirmacion', { state: { registration: registrationSummary } });
+            console.log(`Creating inscription for Area ID ${areaId}, Level ID ${levelId}`);
+            
+            try {
+              const inscripcionResponse = await createInscripcion(inscripcionData);
+              if (inscripcionResponse.status === 'success') {
+                inscripciones.push(inscripcionResponse.data);
+              } else {
+                console.warn(`Error creating inscription: ${inscripcionResponse.message}`);
+              }
+            } catch (inscripcionError) {
+              console.error("Error creating inscription:", inscripcionError);
+              // No lanzamos error para que intente con otras áreas
+            }
           }
         }
+
+        if (inscripciones.length === 0) {
+          throw new Error("No se pudo crear ninguna inscripción. Verifica que las combinaciones de área y nivel no estén ya registradas.");
+        }
+
+        // STEP 4: Navigate to confirmation page
+        const registrationSummary: RegistrationSummary = {
+          id: inscripciones[0].Id_inscripcion.toString(),
+          student: formData,
+          areas: selectedAreas,
+          totalCost,
+          paymentStatus: 'pending',
+          registrationDate: new Date().toISOString(),
+          selectedLevels: selectedLevelObjects,
+        };
+
+        console.log("Registration completed successfully");
+        navigate('/confirmacion', { state: { registration: registrationSummary } });
+
       } catch (error) {
         console.error('Error al procesar la inscripción:', error);
-        alert('Hubo un error al procesar tu inscripción. Por favor, intenta nuevamente.');
+        
+        // Mejorar el mensaje de error
+        let errorMessage = "Error desconocido";
+        
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (typeof error === 'object' && error !== null) {
+          errorMessage = JSON.stringify(error);
+        }
+        
+        alert(`Hubo un error al procesar tu inscripción: ${errorMessage}. Por favor, intenta nuevamente.`);
       }
     }
   };

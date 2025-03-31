@@ -7,6 +7,7 @@ use App\Models\Competidor;
 use App\Models\Grado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class CompetidorController extends Controller
 {
@@ -21,32 +22,39 @@ class CompetidorController extends Controller
     
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:100',
-            'apellido' => 'required|string|max:100',
-            'email' => 'nullable|email|max:100',
-            'ci' => 'required|string|max:20|unique:Competidor,ci',
-            'fecha_nacimiento' => 'required|date',
-            'colegio' => 'required|string|max:100',
-            'Id_grado' => 'required|exists:Grado,Id_grado',
-            'departamento' => 'nullable|string|max:100',
-            'provincia' => 'nullable|string|max:100'
-        ]);
-        
-        if ($validator->fails()) {
+        try {
+            $validator = Validator::make($request->all(), [
+                'nombre' => 'required|string|max:100',
+                'apellido' => 'required|string|max:100',
+                'email' => 'nullable|email|max:100',
+                'ci' => 'required|string|max:20|unique:Competidor,ci',
+                'fecha_nacimiento' => 'required|date',
+                'colegio' => 'required|string|max:100',
+                'Id_grado' => 'required|exists:Grado,Id_grado',
+                'departamento' => 'nullable|string|max:100',
+                'provincia' => 'nullable|string|max:100'
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $validator->errors()->first()
+                ], 400);
+            }
+            
+            $competidor = Competidor::create($request->all());
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Competidor creado exitosamente',
+                'data' => $competidor
+            ], 201);
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => $validator->errors()
-            ], 400);
+                'message' => 'Error al crear el competidor: ' . $e->getMessage()
+            ], 500);
         }
-        
-        $competidor = Competidor::create($request->all());
-        
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Competidor creado exitosamente',
-            'data' => $competidor
-        ], 201);
     }
     
     public function show($id)
@@ -121,6 +129,27 @@ class CompetidorController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Competidor eliminado exitosamente'
+        ]);
+    }
+    
+    public function checkExists(Request $request)
+    {
+        $ci = $request->query('ci');
+        
+        if (!$ci) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Se requiere el parámetro CI'
+            ], 400);
+        }
+        
+        $exists = Competidor::where('ci', $ci)->exists();
+        
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'exists' => $exists
+            ]
         ]);
     }
 }

@@ -6,6 +6,8 @@ export interface Student {
   phone: string;
   colegio: string; // Added field for educational institution
   gradeId: string; // Added field for grade id
+  departamento: string; // Added field for department
+  provincia: string; // Added field for province
   areas: string[]; // Added field for department
   guardian: {
     name: string;
