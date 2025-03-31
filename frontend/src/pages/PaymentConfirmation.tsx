@@ -2,8 +2,21 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, ArrowLeft, Download, Share2 } from 'lucide-react';
 import type { RegistrationSummary } from '../types';
+import { generatePDF } from "./../utils/pdf";
+import  { useState } from 'react';
+import Modal from './../components/Modal';
 
 export function PaymentConfirmation() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const openModal = () => {
+    generatePDF(registration)
+    setIsModalOpen(true);
+  };
+  
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
   const location = useLocation();
   const navigate = useNavigate();
   const registration = location.state?.registration as RegistrationSummary;
@@ -144,10 +157,11 @@ export function PaymentConfirmation() {
 
             {/* Actions */}
             <div className="mt-8 space-y-4">
-              <button className="flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition w-full">
+              <button className="flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition w-full" onClick={openModal} >
                 <Download size={20} />
                 <span>Descargar Comprobante</span>
               </button>
+              <Modal isOpen={isModalOpen} onClose={closeModal} />
               <button className="flex items-center justify-center space-x-2 bg-white text-blue-600 px-6 py-3 rounded-md border border-blue-600 hover:bg-blue-50 transition w-full">
                 <Share2 size={20} />
                 <span>Compartir Inscripción</span>
