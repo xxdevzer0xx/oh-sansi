@@ -797,41 +797,65 @@ export function Admin() {
               <h2 className="text-lg font-semibold">Costos por Área y Nivel</h2>
             </div>
             <div className="p-6">
-              <div className="space-y-4">
-                {areaCosts.length > 0 ? (
-                  areaCosts.map((areaCost) => {
-                    const area = areas.find(a => a.id === areaCost.areaId);
-                    const level = levels.find(l => l.id === areaCost.levelId);
-                    return (
-                      <div key={areaCost.id} className="flex justify-between items-center">
-                        <div>
-                          <span className="font-medium">{area?.name || 'Área desconocida'}</span>
-                          <span className="text-gray-500 text-sm ml-2">({level?.name || 'Nivel desconocido'})</span>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          <span className="font-medium">Bs. {areaCost.cost}</span>
-                          <div className="flex space-x-2">
-                            <button 
-                              className="text-blue-600 hover:text-blue-800"
-                              onClick={() => setEditAreaCost(areaCost)}
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button 
-                              className="text-red-600 hover:text-red-800"
-                              onClick={() => handleDeleteAreaCost(areaCost.id)}
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="text-gray-500 text-center">No hay costos disponibles</p>
-                )}
-              </div>
+              {areaCosts.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead>
+                      <tr>
+                        <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Área
+                        </th>
+                        <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Nivel
+                        </th>
+                        <th className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Costo
+                        </th>
+                        <th className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Acciones
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {areaCosts.map((areaCost) => {
+                        const area = areas.find(a => a.id === areaCost.areaId);
+                        const level = levels.find(l => l.id === areaCost.levelId);
+                        return (
+                          <tr key={areaCost.id}>
+                            <td className="px-2 py-4 whitespace-nowrap">
+                              <span className="font-medium">{area?.name || 'Área desconocida'}</span>
+                            </td>
+                            <td className="px-2 py-4 whitespace-nowrap">
+                              <span className="text-gray-500">{level?.name || 'Nivel desconocido'}</span>
+                            </td>
+                            <td className="px-2 py-4 whitespace-nowrap text-right">
+                              <span className="font-medium">Bs. {areaCost.cost}</span>
+                            </td>
+                            <td className="px-2 py-4 whitespace-nowrap text-right">
+                              <div className="flex justify-end space-x-2">
+                                <button 
+                                  className="text-blue-600 hover:text-blue-800"
+                                  onClick={() => setEditAreaCost(areaCost)}
+                                >
+                                  <Edit size={18} />
+                                </button>
+                                <button 
+                                  className="text-red-600 hover:text-red-800"
+                                  onClick={() => handleDeleteAreaCost(areaCost.id)}
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center">No hay costos disponibles</p>
+              )}
             </div>
           </div>
         </div>
