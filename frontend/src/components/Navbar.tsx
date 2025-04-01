@@ -13,7 +13,11 @@ export function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <span className="text-2xl font-bold text-blue-600">Ohl SanSi</span>
+              <img 
+                src="/Public/images/logo.png" 
+                alt="Ohl SanSi Logo" 
+                className="h-10" 
+              />
             </Link>
           </div>
           

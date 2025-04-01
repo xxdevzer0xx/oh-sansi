@@ -34,14 +34,14 @@ export function Home() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            Ohl SanSi - Olimpiadas de Ciencias y Tecnología
+            O!SanSi - Olimpiadas de Ciencias y Tecnología
           </h1>
           <p className="text-xl text-gray-200 mb-8">
             Inscríbete y participa en las áreas de tu interés
           </p>
           <button 
             onClick={() => navigate('/registro')}
-            className="bg-blue-600 text-white px-8 py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition flex items-center space-x-2 mx-auto"
+            className="bg-blue-600 text-white px-12 py-4 rounded-lg text-lg font-medium hover:bg-blue-700 transition flex items-center justify-center gap-3 mx-auto min-w-[240px] shadow-md hover:shadow-lg transform hover:-translate-y-1"
           >
             <span>Iniciar Inscripción</span>
             <ArrowRight size={20} />
