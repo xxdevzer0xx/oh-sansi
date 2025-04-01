@@ -27,3 +27,4 @@ Sistema de inscripcion de estudiantes a olimpiadas
 2. Haz tus cambios y commitea:
 3. Sube tu rama
 4. Crea un Pull Request (PR) hacia develop.
+

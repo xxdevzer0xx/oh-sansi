@@ -13,16 +13,26 @@ export interface Student {
   birthDate: string;
   email: string;
   phone: string;
-  school: string;
-  grade: string;
-  city: string;
-  province: string;
+  colegio: string;
+  gradeId: string;
+  departamento: string;
+  provincia: string;
   areas: string[];
   guardian: {
     name: string;
     email: string;
     phone: string;
   };
+}
+
+export interface Level {
+  id: string;
+  name: string;
+}
+
+export interface Grade {
+  id: string;
+  name: string;
 }
 
 export interface CompetitionArea {
@@ -33,10 +43,38 @@ export interface CompetitionArea {
   cost: number;
 }
 
+export interface AreaCost {
+  id: string;
+  areaId: string;
+  levelId: string;
+  cost: number;
+}
+
 export interface RegistrationSummary {
+  id: string;
   student: Student;
   areas: CompetitionArea[];
   totalCost: number;
   paymentStatus: string;
   registrationDate: string;
+  selectedLevels: Level[];
+}
+
+export interface PaymentDetails {
+  amount: number;
+  currency: string;
+  method: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  transactionId?: string;
+  paymentDate?: string;
+}
+
+export interface AdminStats {
+  totalStudents: number;
+  totalRevenue: number;
+  pendingPayments: number;
+  registrationsByArea: {
+    name: string;
+    count: number;
+  }[];
 }
