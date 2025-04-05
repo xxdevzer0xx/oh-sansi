@@ -1,0 +1,232 @@
+# Guía de Uso de la API
+
+## PublicConvocatoriaController
+### 1. Obtener Convocatoria Actual
+**Endpoint:** `/api/v1/public/convocatoria-actual`  
+**Método:** GET  
+**Descripción:** Obtiene la convocatoria activa actual con sus áreas y niveles.  
+**Ejemplo de Respuesta:**  
+```json
+{
+  "convocatoria": {
+    "id": 1,
+    "nombre": "Convocatoria 2023",
+    "fecha_inicio": "2023-01-01",
+    "fecha_fin": "2023-12-31",
+    "max_areas": 3,
+    "estado": "abierta",
+    "areas": [
+      {
+        "id": 1,
+        "nombre": "Matemáticas",
+        "costo": 100
+      }
+    ],
+    "niveles": [
+      {
+        "id": 1,
+        "nombre": "Primaria",
+        "grado_min": 1,
+        "grado_max": 6
+      }
+    ]
+  },
+  "estadisticas": {
+    "total_inscritos": 50,
+    "areas_participantes": 5,
+    "dias_restantes": 30
+  }
+}
+```
+
+---
+
+## InscripcionDatosController
+### 1. Obtener Datos de Inscripción
+**Endpoint:** `/api/v1/inscripcion/datos`  
+**Método:** GET  
+**Descripción:** Obtiene todos los datos necesarios para el formulario de inscripción, incluyendo convocatoria, áreas, niveles, grados y unidades educativas.  
+**Ejemplo de Respuesta:**  
+```json
+{
+  "convocatoria": {
+    "id": 1,
+    "nombre": "Convocatoria 2023",
+    "fecha_inicio": "2023-01-01",
+    "fecha_fin": "2023-12-31",
+    "max_areas": 3,
+    "estado": "abierta"
+  },
+  "areas": [
+    {
+      "id": 1,
+      "nombre": "Matemáticas",
+      "costo": 100
+    }
+  ],
+  "niveles_por_area": {
+    "1": [
+      {
+        "id": 1,
+        "nombre": "Primaria",
+        "grado_min": 1,
+        "grado_max": 6
+      }
+    ]
+  },
+  "grados": [
+    {
+      "id": 1,
+      "nombre": "Primero"
+    }
+  ],
+  "unidades_educativas": [
+    {
+      "id": 1,
+      "nombre": "Unidad Educativa Central"
+    }
+  ]
+}
+```
+
+---
+
+## InscripcionCompletaController
+### 1. Completar Inscripción
+**Endpoint:** `/api/v1/inscripcion/completa`  
+**Método:** POST  
+**Descripción:** Realiza el proceso completo de inscripción en una sola solicitud.  
+**Ejemplo de Solicitud:**  
+```json
+{
+  "estudiante": {
+    "nombres": "Juan",
+    "apellidos": "Perez",
+    "ci": "12345678",
+    "fecha_nacimiento": "2005-05-15",
+    "email": "juan.perez@example.com",
+    "id_unidad_educativa": 1,
+    "id_grado": 2
+  },
+  "tutor_legal": {
+    "nombres": "Carlos",
+    "apellidos": "Perez",
+    "ci": "87654321",
+    "telefono": "123456789",
+    "email": "carlos.perez@example.com",
+    "parentesco": "Padre"
+  },
+  "tutor_academico": {
+    "nombres": "Ana",
+    "apellidos": "Lopez",
+    "ci": "11223344",
+    "telefono": "987654321",
+    "email": "ana.lopez@example.com"
+  },
+  "areas_seleccionadas": [
+    {
+      "id_convocatoria_area": 1,
+      "id_convocatoria_nivel": 1
+    }
+  ]
+}
+```
+**Ejemplo de Respuesta:**  
+```json
+{
+  "estudiante": { ... },
+  "inscripciones": [ ... ],
+  "orden_pago": { ... },
+  "costo_total": 100
+}
+```
+
+---
+
+## AdminDashboardController
+### 1. Obtener Datos del Panel de Administración
+**Endpoint:** `/api/v1/admin/dashboard`  
+**Método:** GET  
+**Descripción:** Obtiene estadísticas y datos para el panel de administración.  
+**Ejemplo de Respuesta:**  
+```json
+{
+  "estadisticas": {
+    "total_estudiantes": 100,
+    "total_inscripciones": 50,
+    "ingresos_pendientes": 5000,
+    "ingresos_pagados": 10000
+  },
+  "convocatorias_activas": [
+    {
+      "id": 1,
+      "nombre": "Convocatoria 2023",
+      "estado": "abierta"
+    }
+  ],
+  "inscripciones_por_area": [
+    {
+      "nombre_area": "Matemáticas",
+      "total": 20
+    }
+  ],
+  "inscripciones_por_mes": [
+    {
+      "mes": "Ene 2023",
+      "total": 10
+    }
+  ],
+  "catalogos": {
+    "areas": [ ... ],
+    "grados": [ ... ],
+    "niveles": [ ... ]
+  }
+}
+```
+
+---
+
+## ConvocatoriaCompletaController
+### 1. Crear Convocatoria Completa
+**Endpoint:** `/api/v1/convocatorias/completa`  
+**Método:** POST  
+**Descripción:** Crea una convocatoria con sus áreas y niveles en una sola solicitud.  
+**Ejemplo de Solicitud:**  
+```json
+{
+  "nombre": "Convocatoria 2024",
+  "fecha_inicio_inscripcion": "2024-01-01",
+  "fecha_fin_inscripcion": "2024-12-31",
+  "max_areas_por_estudiante": 3,
+  "estado": "planificada",
+  "areas": [
+    {
+      "id_area": 1,
+      "costo_inscripcion": 100
+    }
+  ],
+  "niveles": [
+    {
+      "id_nivel": 1
+    }
+  ]
+}
+```
+**Ejemplo de Respuesta:**  
+```json
+{
+  "convocatoria": { ... }
+}
+```
+
+### 2. Obtener Convocatoria Completa
+**Endpoint:** `/api/v1/admin/convocatorias/{id}/completa`  
+**Método:** GET  
+**Descripción:** Obtiene una convocatoria con todos sus datos relacionados.  
+**Ejemplo de Respuesta:**  
+```json
+{
+  "convocatoria": { ... },
+  "estadisticas": { ... }
+}
+```
