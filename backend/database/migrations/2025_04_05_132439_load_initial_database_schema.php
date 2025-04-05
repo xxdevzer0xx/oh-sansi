@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePasswordResetsTable extends Migration
+class LoadInitialDatabaseSchema extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,9 @@ class CreatePasswordResetsTable extends Migration
      */
     public function up()
     {
-        Schema::create('password_resets', function (Blueprint $table) {
-            $table->string('email')->index();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
+        DB::unprepared(
+            file_get_contents(database_path('script-olimpiadas.sql'))
+        );
     }
 
     /**
@@ -27,6 +25,10 @@ class CreatePasswordResetsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('password_resets');
+        $tables = DB::select('SHOW TABLES');
+        foreach ($tables as $table) {
+            $tableName = reset($table);
+            DB::statement("DROP TABLE IF EXISTS $tableName");
+        }
     }
 }
