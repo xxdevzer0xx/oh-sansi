@@ -19,8 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    // Allow requests from the frontend development server
-    'allowed_origins' => ['http://localhost:5173', 'http://localhost:5174', 'http://localhost'],
+    'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 
@@ -30,6 +29,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true, // Changed to true to support credentials
+    'supports_credentials' => false,
 
 ];
