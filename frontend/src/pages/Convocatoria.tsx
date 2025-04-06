@@ -14,8 +14,13 @@ const NuevaConvocatoria: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors, isValid },
+    getValues,
+    setValue,
   } = useForm<ConvocatoriaForm>({
     mode: "onChange",
+    defaultValues: {
+      maxAreas: 2,
+    },
   });
 
   const onSubmit = async (data: ConvocatoriaForm) => {
@@ -24,7 +29,7 @@ const NuevaConvocatoria: React.FC = () => {
       fecha_inicio_inscripcion: data.fechaInicio,
       fecha_fin_inscripcion: data.fechaFin,
       max_areas_por_estudiante: data.maxAreas,
-      estado: data.estado.toLowerCase(), // Laravel espera: planificada, abierta, etc.
+      estado: data.estado.toLowerCase(),
     };
 
     try {
@@ -102,12 +107,46 @@ const NuevaConvocatoria: React.FC = () => {
 
           {/* MÁXIMO DE ÁREAS */}
           <div>
-            <label className="block text-sm font-medium">Máximo de áreas por participante</label>
-            <select {...register("maxAreas")} className="w-full p-2 border rounded mt-1">
-              <option value={2}>2 áreas</option>
-              <option value={3}>3 áreas</option>
-              <option value={4}>4 áreas</option>
-            </select>
+            <label className="block text-sm font-medium mb-1">Máximo de áreas por participante</label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const value = getValues("maxAreas");
+                  if (value > 1) setValue("maxAreas", value - 1);
+                }}
+                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                -
+              </button>
+
+              <input
+                type="number"
+                {...register("maxAreas", {
+                  required: true,
+                  min: {
+                    value: 1,
+                    message: "Debe ser al menos 1",
+                  },
+                })}
+                className="w-16 text-center border rounded"
+                min={1}
+              />
+
+              <button
+                type="button"
+                onClick={() => {
+                  const value = getValues("maxAreas");
+                  setValue("maxAreas", value + 1);
+                }}
+                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                +
+              </button>
+            </div>
+            {errors.maxAreas && (
+              <p className="text-red-500 text-sm">{errors.maxAreas.message}</p>
+            )}
           </div>
 
           {/* ESTADO */}
@@ -116,8 +155,6 @@ const NuevaConvocatoria: React.FC = () => {
             <select {...register("estado")} className="w-full p-2 border rounded mt-1">
               <option value="planificada">Planificada</option>
               <option value="abierta">Abierta</option>
-              <option value="cerrada">Cerrada</option>
-              <option value="finalizada">Finalizada</option>
             </select>
           </div>
 

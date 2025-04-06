@@ -29,11 +29,32 @@ class ConvocatoriaController extends ApiController
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:100',
-            'fecha_inicio_inscripcion' => 'required|date',
-            'fecha_fin_inscripcion' => 'required|date|after_or_equal:fecha_inicio_inscripcion',
-            'max_areas_por_estudiante' => 'required|integer|min:1',
-            'estado' => 'required|in:planificada,abierta,cerrada,finalizada',
+            'nombre' => [
+            'required',
+            'string',
+            'max:50',
+            'unique:convocatorias,nombre', 
+            ],
+            'fecha_inicio_inscripcion' => [
+                'required',
+                'date',
+                'after_or_equal:today', 
+            ],
+            'fecha_fin_inscripcion' => [
+                'required',
+                'date',
+                'after_or_equal:fecha_inicio_inscripcion',
+            ],
+            'max_areas_por_estudiante' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:5',
+            ],
+            'estado' => [
+                'required',
+                'in:planificada,abierta,',
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -78,11 +99,32 @@ class ConvocatoriaController extends ApiController
         }
         
         $validator = Validator::make($request->all(), [
-            'nombre' => 'sometimes|required|string|max:100',
-            'fecha_inicio_inscripcion' => 'sometimes|required|date',
-            'fecha_fin_inscripcion' => 'sometimes|required|date|after_or_equal:fecha_inicio_inscripcion',
-            'max_areas_por_estudiante' => 'sometimes|required|integer|min:1',
-            'estado' => 'sometimes|required|in:planificada,abierta,cerrada,finalizada',
+            'nombre' => [
+            'required',
+            'string',
+            'max:50',
+            'unique:convocatorias,nombre', 
+            ],
+            'fecha_inicio_inscripcion' => [
+                'required',
+                'date',
+                'after_or_equal:today', 
+            ],
+            'fecha_fin_inscripcion' => [
+                'required',
+                'date',
+                'after_or_equal:fecha_inicio_inscripcion',
+            ],
+            'max_areas_por_estudiante' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:5',
+            ],
+            'estado' => [
+                'required',
+                'in:planificada,abierta,',
+            ],
         ]);
 
         if ($validator->fails()) {
