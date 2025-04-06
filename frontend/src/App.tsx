@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import Registration from './pages/Registration';
 import AdminPanel from './pages/AdminPanel';
+import Convocatoria from './pages/Convocatoria';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/inscripcion" element={<Registration />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/Convocatoria" element={<Convocatoria/>} />
         </Routes>
       </Layout>
     </Router>
