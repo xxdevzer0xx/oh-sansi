@@ -5,26 +5,10 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
+import { CompForm } from './pages/CompForm';
 import { Registration } from './pages/Registration';
 import { PaymentConfirmation } from './pages/PaymentConfirmation';
 import { Admin } from './pages/Admin';
-<<<<<<< HEAD
-import { CompForm } from './pages/CompForm';
-function App() {
-  return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/registro" element={<Registration />} />
-          <Route path="/confirmacion" element={<PaymentConfirmation />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/compForm" element={<CompForm />} />
-        </Routes>
-        <Footer />
-      </div>
-=======
 import { Login } from './pages/Login';
 
 function App() {
@@ -37,6 +21,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/registro" element={<Registration />} />
             <Route path="/confirmacion" element={<PaymentConfirmation />} />
+            <Route path="/compForm" element={<CompForm />} />
             <Route path="/login" element={<Login />} />
             <Route
               path="/admin"
@@ -50,7 +35,7 @@ function App() {
           <Footer />
         </div>
       </AuthProvider>
->>>>>>> kevin
+
     </Router>
   );
 }

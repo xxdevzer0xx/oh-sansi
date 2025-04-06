@@ -2,9 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-<<<<<<< HEAD
 use App\Http\Controllers\ObtenerMaterias;
-=======
 use App\Http\Controllers\API\AreaController;
 use App\Http\Controllers\API\NivelCategoriaController;
 use App\Http\Controllers\API\GradoController;
@@ -17,14 +15,12 @@ use App\Http\Controllers\API\UsuarioController;
 use App\Http\Controllers\API\RolController;
 use App\Http\Controllers\API\AuthController;
 
->>>>>>> kevin
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 */
 
-<<<<<<< HEAD
 
 Route::get('/obtener-materias', [ObtenerMaterias::class, 'obtenerMaterias']);
 
@@ -32,7 +28,6 @@ Route::get('/obtener-materias', [ObtenerMaterias::class, 'obtenerMaterias']);
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
-=======
 // Test endpoint for connectivity check
 Route::get('test-connection', function() {
     return response()->json([
@@ -40,7 +35,6 @@ Route::get('test-connection', function() {
         'message' => 'Conexión exitosa con el backend',
         'timestamp' => now()->toDateTimeString()
     ]);
->>>>>>> kevin
 });
 
 // Test endpoint for areas (public temporary version)
@@ -76,4 +70,4 @@ Route::post('login', [AuthController::class, 'login']);
     
     // Dashboard data
     Route::get('dashboard/stats', [InscripcionController::class, 'getStats']);
-// });
+ });
