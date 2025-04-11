@@ -2,41 +2,51 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Inscripcion extends Model
 {
-    protected $table = 'Inscripcion';
-    protected $primaryKey = 'Id_inscripcion';
-    public $timestamps = false;
-    
+    use HasFactory;
+
+    protected $primaryKey = 'id_inscripcion';
+    protected $table = 'inscripciones';
+
     protected $fillable = [
-        'Id_competidor', 'Id_tutor', 'Id_area', 'Id_nivel',
-        'estado', 'fecha', 'codigo', 'boleta_generada'
+        'id_estudiante',
+        'id_convocatoria_area',
+        'id_convocatoria_nivel',
+        'id_tutor_academico',
+        'fecha_inscripcion',
+        'estado',
     ];
-    
-    public function competidor()
+
+    protected $casts = [
+        'fecha_inscripcion' => 'datetime',
+    ];
+
+    public function estudiante()
     {
-        return $this->belongsTo(Competidor::class, 'Id_competidor');
+        return $this->belongsTo(Estudiante::class, 'id_estudiante');
     }
-    
-    public function tutor()
+
+    public function convocatoriaArea()
     {
-        return $this->belongsTo(Tutor::class, 'Id_tutor');
+        return $this->belongsTo(ConvocatoriaArea::class, 'id_convocatoria_area');
     }
-    
-    public function area()
+
+    public function convocatoriaNivel()
     {
-        return $this->belongsTo(Area::class, 'Id_area');
+        return $this->belongsTo(ConvocatoriaNivel::class, 'id_convocatoria_nivel');
     }
-    
-    public function nivel()
+
+    public function tutorAcademico()
     {
-        return $this->belongsTo(NivelCategoria::class, 'Id_nivel');
+        return $this->belongsTo(TutorAcademico::class, 'id_tutor_academico');
     }
-    
-    public function pagos()
+
+    public function ordenesPago()
     {
-        return $this->hasMany(Pago::class, 'Id_inscripcion');
+        return $this->hasMany(OrdenPago::class, 'id_inscripcion');
     }
 }

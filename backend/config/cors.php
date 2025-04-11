@@ -15,11 +15,10 @@ return [
     |
     */
 
-    'paths' => ['api/*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    // Permitir todos los orígenes durante las pruebas
     'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
@@ -30,6 +29,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false, // Cambiado a false para pruebas
+    'supports_credentials' => false,
 
 ];

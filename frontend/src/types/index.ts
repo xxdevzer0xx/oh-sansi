@@ -1,5 +1,6 @@
 export interface Student {
   name: string;
+  lastName: string;
   ci: string;
   birthDate: string;
   email: string;
@@ -11,6 +12,7 @@ export interface Student {
   provincia: string;
   guardian: {
     name: string;
+    ci: string;
     email: string;
     phone: string;
   };
@@ -31,6 +33,7 @@ export interface CompetitionArea {
   name: string;
   description: string;
   level: string;
+  grade: string; 
   cost: number;
 }
 
@@ -42,13 +45,15 @@ export interface AreaCost {
 }
 
 export interface RegistrationSummary {
-  id: string;
+  id: string|undefined;
   student: Student;
-  areas: CompetitionArea[];
+  areas: CompetitionArea[]|'';
   totalCost: number;
   paymentStatus: 'pending' | 'completed';
   registrationDate: string;
-  selectedLevels: Level[]; // Changed to array of Level objects
+  selectedLevels: Level[]|''; // Changed to array of Level objects
+  teachers: Teacher[]| null;
+  olympiadId: string|undefined; 
 }
 
 export interface PaymentDetails {
@@ -65,7 +70,37 @@ export interface AdminStats {
   totalRevenue: number;
   pendingPayments: number;
   registrationsByArea: {
-    name: string;
-    count: number;
-  }[];
+    areas: string[];
+    guardian: {
+      name: string;
+      email: string;
+      phone: string;
+    };
+  }
 }
+  export interface CompetitionArea {
+    id: string;
+    name: string;
+    description: string;
+    level: string;
+    cost: number;
+  }
+  
+
+  
+  export interface PaymentDetails {
+    amount: number;
+    currency: string;
+    method: string;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    transactionId?: string;
+    paymentDate?: string;
+  }
+
+  export interface Teacher {
+    name: string, 
+    lastName: string,
+    ci: string,
+    email: string,
+    phone: string
+  }

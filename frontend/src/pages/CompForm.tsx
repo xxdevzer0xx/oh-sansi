@@ -1,4 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { Student, Teacher } from '../types';
+import { useParams } from 'react-router-dom';
+import api from '../services/api';
+import type { CompetitionArea, RegistrationSummary, Level, Grade, AreaCost } from '../types';
+
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 const grados = ['3roPrimaria', '4toPrimaria', '5toPrimaria', '6toPrimaria', '1roSecundaria', '2doSecundaria', '3roSecundaria', '4toSecundaria', '5toSecundaria', '6toSecundaria'];
 const departamentos = ['La Paz', 'Cochabamba', 'Santa Cruz', 'Oruro', 'Potosí', 'Chuquisaca', 'Tarija', 'Beni', 'Pando'];
@@ -55,6 +61,8 @@ const Modal = ({ isOpen, onClose, materiasDisponibles, selectedMaterias, handleM
 };
 
 export function CompForm() {
+
+  const { convocatoriaId } = useParams<{ convocatoriaId: string }>();
   const [modalOpen, setModalOpen] = useState(false);
   const [grado, setGrado] = useState(grados[0]);
   const [materiasDisponibles, setMateriasDisponibles] = useState<string[]>([]);
@@ -62,20 +70,28 @@ export function CompForm() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // Sector 1 - Estudiante
-  const [datosEstudiante, setDatosEstudiante] = useState({
-    apellidos: '',
-    nombres: '',
+  const [datosEstudiante, setDatosEstudiante] = useState<Student>({
+    name: '',
+    lastName: '',
     ci: '',
-    nacimiento: '',
-    correo: '',
-    celular: '',
+    birthDate: '',
+    email: '',
+    phone: '',
+    colegio: '', // Added field for educational institution
+    gradeId: '', // Added field for grade id
+    areas: [], // Added field for department
     departamento: departamentos[0],
     provincia: '',
-    unidad: ''
-  });
+    guardian: {
+      name: '',
+      ci: '',
+ 
+      email: '',
+      phone: '',
+    }});
 
   // Sector 2 - Tutores Académicos
-  const [tutores, setTutores] = useState<{ [key: string]: any }>({});
+  const [tutores, setTutores] = useState< Record<string,Teacher> >({});
 
   // Sector 3 - Tutor Legal
   const [tutorLegal, setTutorLegal] = useState({
@@ -83,13 +99,14 @@ export function CompForm() {
     nombres: '',
     ci: '',
     correo: '',
-    celular: ''
+    telefono: '',
+    parentesco: ''
   });
 
   useEffect(() => {
     const fetchMaterias = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/obtener-materias?grado=${grado}`);
+        const response = await fetch(`http://127.0.0.1:8000/api/v1/obtener-materias?grado=${grado}`);
         const data = await response.json();
         setMateriasDisponibles(data.materias);
         setSelectedMaterias([]);
@@ -111,11 +128,41 @@ export function CompForm() {
     } else {
       if (selectedMaterias.length < 2) {
         setSelectedMaterias([...selectedMaterias, materia]);
-        setTutores({ ...tutores, [materia]: { apellidos: '', nombres: '', ci: '', correo: '', celular: '' } });
+        setTutores({ ...tutores, [materia]: { apellidos: '', nombres: '', ci: '', correo: '', telefono: '' } });
       }
     }
   };
+  const transformar = () => {
+    
+    const tutoresAcademicos = Object.values(tutores);
 
+
+    const estudiante = {
+      nombres: datosEstudiante.name,
+      apellidos: datosEstudiante.lastName,
+      ci: datosEstudiante.ci,
+      fecha_nacimiento: datosEstudiante.birthDate,
+      correo: datosEstudiante.email,
+      telefono: datosEstudiante.phone,
+      unidad_educativa: datosEstudiante.colegio,
+      grado: grado,
+      areas: datosEstudiante.areas,
+      departamento: datosEstudiante.departamento,
+      provincia: datosEstudiante.provincia,
+     
+    };
+
+
+
+    const form: {[key:string] : any} = {
+      estudiante: estudiante,
+      tutor_legal: tutorLegal,
+      areas_seleccionadas:'',
+      tutor_academico: tutoresAcademicos,
+      convocatoria_id: convocatoriaId,
+    }
+    return form;
+  }
   const actualizarTutor = (materia: string, campo: string, valor: string) => {
     setTutores({
       ...tutores,
@@ -130,47 +177,51 @@ export function CompForm() {
     let newErrors: { [key: string]: string } = {};
 
     // Sector 1 validations
-    if (!validarTexto(datosEstudiante.apellidos, 2, 50)) newErrors.apellidos = "Apellidos inválidos.";
-    if (!validarTexto(datosEstudiante.nombres, 2, 50)) newErrors.nombres = "Nombres inválidos.";
+    if (!validarTexto(datosEstudiante.lastName, 2, 50)) newErrors.lastName = "Apellidos inválidos.";
+    if (!validarTexto(datosEstudiante.name, 2, 50)) newErrors.name = "Nombres inválidos.";
     if (!validarCI(datosEstudiante.ci)) newErrors.ci = "CI inválido.";
-    if (!datosEstudiante.nacimiento) newErrors.nacimiento = "Fecha de nacimiento requerida.";
-    if (datosEstudiante.correo && !validarCorreo(datosEstudiante.correo)) {
-      newErrors.correo = "Correo inválido.";  }
-    if (datosEstudiante.celular && !validarCelular(datosEstudiante.celular)) {
-        newErrors.celular = "Celular inválido."; }
+    if (!datosEstudiante.birthDate) newErrors.birthDate = "Fecha de birthDate requerida.";
+    if (datosEstudiante.email && !validarCorreo(datosEstudiante.email)) {
+      newErrors.email = "Correo inválido.";  }
+    if (datosEstudiante.phone && !validarCelular(datosEstudiante.phone)) {
+        newErrors.phone = "Celular inválido."; }
     if (!validarProvinciaUnidad(datosEstudiante.provincia)) newErrors.provincia = "Provincia inválida.";
-    if (!validarProvinciaUnidad(datosEstudiante.unidad)) newErrors.unidad = "Unidad Educativa inválida.";
+    if (!validarProvinciaUnidad(datosEstudiante.colegio)) newErrors.colegio = "Unidad Educativa inválida.";
 
     // Sector 2 validations
     if (selectedMaterias.length === 0) newErrors.materias = "Seleccione al menos 1 materia.";
     selectedMaterias.forEach(materia => {
-      if (tutores[materia].apellidos && !validarTexto(tutores[materia].apellidos, 2, 50)) newErrors[`${materia}_apellidos`] = "Apellidos inválidos.";
-      if (tutores[materia].nombres && !validarTexto(tutores[materia].nombres, 2, 50)) newErrors[`${materia}_nombres`] = "Nombres inválidos.";
+      if (tutores[materia].lastName && !validarTexto(tutores[materia].lastName, 2, 50)) newErrors[`${materia}_apellidos`] = "Apellidos inválidos.";
+      if (tutores[materia].name && !validarTexto(tutores[materia].name, 2, 50)) newErrors[`${materia}_nombres`] = "Nombres inválidos.";
       if (tutores[materia].ci && !validarCI(tutores[materia].ci)) newErrors[`${materia}_ci`] = "CI inválido.";
-      if (tutores[materia].correo && !validarCorreo(tutores[materia].correo)) newErrors[`${materia}_correo`] = "Correo inválido.";
-      if (tutores[materia].celular && !validarCelular(tutores[materia].celular)) newErrors[`${materia}_celular`] = "Celular inválido.";
+      if (tutores[materia].email && !validarCorreo(tutores[materia].email)) newErrors[`${materia}_email`] = "Correo inválido.";
+      if (tutores[materia].phone && !validarCelular(tutores[materia].phone)) newErrors[`${materia}_celular`] = "Celular inválido.";
     });
 
     // Sector 3 validations
-    if (!validarTexto(tutorLegal.apellidos, 2, 50)) newErrors.tutorLegal_apellidos = "Apellidos inválidos.";
-    if (!validarTexto(tutorLegal.nombres, 2, 50)) newErrors.tutorLegal_nombres = "Nombres inválidos.";
+    if (!validarTexto(tutorLegal.lastName, 2, 50)) newErrors.tutorLegal_apellidos = "Apellidos inválidos.";
+    if (!validarTexto(tutorLegal.name, 2, 50)) newErrors.tutorLegal_nombres = "Nombres inválidos.";
     if (!validarCI(tutorLegal.ci)) newErrors.tutorLegal_ci = "CI inválido.";
-    if (!validarCorreo(tutorLegal.correo)) newErrors.tutorLegal_correo = "Correo inválido.";
-    if (!validarCelular(tutorLegal.celular)) newErrors.tutorLegal_celular = "Celular inválido.";
+    if (!validarCorreo(tutorLegal.email)) newErrors.tutorLegal_email = "Correo inválido.";
+    if (!validarCelular(tutorLegal.phone)) newErrors.tutorLegal_celular = "Celular inválido.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const confirmarAccion = (mensaje: string) => {
-    if (validateForm()) {
+    
+  //  if (validateForm()) {
+    
       if (window.confirm(mensaje)) {
-        alert("Datos enviados correctamente.");
+   
+        const form =  transformar();
+        api.post( `${API_BASE_URL}/api/v1/public/inscripcion-completa`  , JSON.stringify(form) );
       }
-    } else {
+  //  } else {
       alert("Por favor, corrija los errores en el formulario.");
     }
-  };
+  // };
 
   return (
     <form className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md space-y-6">
@@ -178,14 +229,14 @@ export function CompForm() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
-          { label: 'Apellidos', campo: 'apellidos', tipo: 'text' },
-          { label: 'Nombres', campo: 'nombres', tipo: 'text' },
+          { label: 'Apellidos', campo: 'lastName', tipo: 'text' },
+          { label: 'Nombres', campo: 'name', tipo: 'text' },
           { label: 'CI', campo: 'ci', tipo: 'text' },
-          { label: 'Fecha de Nacimiento', campo: 'nacimiento', tipo: 'date' },
-          { label: 'Correo Electrónico', campo: 'correo', tipo: 'email' },
-          { label: 'Celular', campo: 'celular', tipo: 'text' },
+          { label: 'Fecha de Nacimiento', campo: 'birthDate', tipo: 'date' },
+          { label: 'Correo Electrónico', campo: 'email', tipo: 'email' },
+          { label: 'Celular', campo: 'phone', tipo: 'text' },
           { label: 'Provincia', campo: 'provincia', tipo: 'text' },
-          { label: 'Unidad Educativa', campo: 'unidad', tipo: 'text' }
+          { label: 'Unidad Educativa', campo: 'colegio', tipo: 'text' }
         ].map(({ label, campo, tipo }) => (
           <div key={campo}>
             <label className="block text-sm font-medium">{label} </label>
@@ -227,8 +278,8 @@ export function CompForm() {
 
         {selectedMaterias.map(materia => (
           <div key={materia} className="border p-4 mb-4 rounded-md shadow-sm">
-            <h4 className="font-semibold mb-2">Datos del Tutor Académico para {materia}</h4>
-            {['apellidos', 'nombres', 'ci', 'correo', 'celular'].map(campo => (
+            <h4 className="font-semibold mb-2">Datos del Tutor Académico para {materia} (opcional)</h4>
+            {['apellidos', 'nombres', 'ci', 'correo', 'telefono'].map(campo => (
               <div key={campo}>
                 <input
                   type="text"
@@ -246,7 +297,7 @@ export function CompForm() {
 
       <div>
         <h2 className="text-xl font-semibold mt-8">Datos del Tutor Legal</h2>
-        {['apellidos', 'nombres', 'ci', 'correo', 'celular'].map(campo => (
+        {['apellidos', 'nombres', 'ci', 'correo', 'telefono', 'parentesco'].map(campo => (
           <div key={campo} className="mb-2">
             <label className="block text-sm font-medium">{campo.charAt(0).toUpperCase() + campo.slice(1)} *</label>
             <input

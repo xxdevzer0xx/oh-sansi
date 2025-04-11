@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Student, CompetitionArea, RegistrationSummary, Grade, Level } from '../types';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
+// import { API_BASE_URL } from '../config';
 import { getGrados, getNiveles } from '../services/apiServices';
 
+const  API_BASE_URL = 'http://127.0.0.1:8000';
 const initialFormData: Student = {
   name: '',
   ci: '',
@@ -17,6 +18,8 @@ const initialFormData: Student = {
   provincia: '',
   areas: [],
   guardian: {
+    birthDate: '',
+    ci: '',
     name: '',
     email: '',
     phone: '',
@@ -35,7 +38,8 @@ const departamentos = [
   'Pando',
 ];
 
-export function Registration() {
+export default function Registration() {
+
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Student>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -45,6 +49,9 @@ export function Registration() {
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -236,7 +243,10 @@ export function Registration() {
                 inscripciones.push(inscripcionResponse.data.data);
               }
             }
-
+            const levels : Level[] = selectedLevels.map(level => {
+              let lev: Level = {id:level, name:level};
+              return lev;
+            });
             const registrationSummary: RegistrationSummary = {
               id: inscripciones.length > 0 ? inscripciones[0].Id_inscripcion : 'temp-id',
               student: formData,
@@ -244,11 +254,14 @@ export function Registration() {
                 ...area,
                 level: availableLevels.find((lvl) => selectedLevels.includes(lvl.id))?.name || area.level,
               })),
-              totalCost,
+              totalCost:totalCost,
               paymentStatus: 'pending',
               registrationDate: new Date().toISOString(),
-              selectedLevels,
+              selectedLevels: levels,
+              olympiadId: "1",
+
             };
+
 
             navigate('/confirmacion', { state: { registration: registrationSummary } });
           }
