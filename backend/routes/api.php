@@ -22,6 +22,8 @@ use App\Http\Controllers\Api\InscripcionCompletaController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\ConvocatoriaCompletaController;
 use App\Http\Controllers\Api\AdminConvocatoriaController;
+use App\Http\Controllers\Api\RequisitoConvocatoriaController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -109,4 +111,11 @@ Route::prefix('v1')->group(function () {
     Route::post('/admin/convocatorias', [AdminConvocatoriaController::class, 'crearConvocatoria']);
     Route::post('/admin/convocatorias/asociar-areas', [AdminConvocatoriaController::class, 'asociarAreas']);
     Route::get('/admin/grados', [AdminConvocatoriaController::class, 'getGrados']);
+
+    // Rutas para el controlador de Convocatoria (para la lista desplegable)
+    Route::get('convocatorias', [ConvocatoriaController::class, 'index'])->name('convocatorias.index');
+
+    // Rutas para el controlador de RequisitoConvocatoria
+    Route::get('convocatorias/{convocatoria}/requisitos', [RequisitoConvocatoriaController::class, 'index'])->name('convocatorias.requisitos.index');
+    Route::post('convocatorias/{convocatoria}/requisitos', [RequisitoConvocatoriaController::class, 'store'])->name('convocatorias.requisitos.store');
 });

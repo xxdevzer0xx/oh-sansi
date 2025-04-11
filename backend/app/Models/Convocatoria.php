@@ -50,7 +50,7 @@ class Convocatoria extends Model
             'id_convocatoria_area', // FK en convocatoria_niveles que se relaciona con convocatoria_areas
             'id_convocatoria_nivel', // FK en inscripciones
             'id_convocatoria', // PK en convocatorias
-            'id_convocatoria_nivel' // PK en convocatoria_niveles
+            'id_convocatoria_nivel', // PK en convocatoria_niveles
         );
     }
 }

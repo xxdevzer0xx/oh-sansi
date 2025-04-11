@@ -1,5 +1,8 @@
 import axiosInstance from './axiosInstance';
 
+
+const API_BASE_URL = '/v1/admin';
+
 /**
  * Obtiene todas las convocatorias activas
  */
@@ -96,5 +99,50 @@ export const asociarAreas = async (data) => {
       console.error('Respuesta del servidor:', error.response.data);
     }
     throw error;
+  }
+};
+
+// --- Funciones para los Requisitos (asumiendo las rutas en Laravel) ---
+
+// Obtiene los requisitos de una convocatoria específica
+export const getConvocatoriaRequisitos = async (idConvocatoria: string) => {
+  try {
+      const response = await axiosInstance.get(`/api/v1/admin/convocatorias/${idConvocatoria}/requisitos`);
+      return response.data;
+  } catch (error: any) {
+      if (error.response?.status === 404) {
+          // Si no existen requisitos aún, devolvemos un array vacío
+          return [];
+      }
+      throw error; // Otros errores sí los lanzamos
+  }
+};
+
+// Actualiza un requisito existente
+export const updateConvocatoriaRequisito = async (
+  idConvocatoria: string,
+  idRequisito: number,
+  data: { es_obligatorio: boolean }
+) => {
+  try {
+      const response = await axiosInstance.put(`${API_BASE_URL}/convocatorias/${idConvocatoria}/requisitos/${idRequisito}`, data);
+      return response.data.data as Requisito; // Ajusta 'Requisito' si tienes una interfaz definida
+  } catch (error: any) {
+      console.error('Error al actualizar el requisito:', error);
+      throw error;
+  }
+};
+
+// Crea un nuevo requisito
+export const crearConvocatoriaRequisito = async (
+  idConvocatoria: string,
+  data: { entidad: string; campo: string; es_obligatorio: boolean }
+) => {
+  try {
+      const response = await axiosInstance.post(`${API_BASE_URL}/convocatorias/${idConvocatoria}/requisitos`, data);
+      return response.data.data as Requisito; // Ajusta 'Requisito' si tienes una interfaz definida
+  } catch (error: any) {
+      console.error('Error al crear el requisito:', error);
+      throw error;
   }
 };
