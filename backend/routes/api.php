@@ -22,7 +22,8 @@ use App\Http\Controllers\Api\InscripcionCompletaController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\ConvocatoriaCompletaController;
 use App\Http\Controllers\Api\AdminConvocatoriaController;
-
+use App\Http\Controllers\Api\AreaController;
+use App\Http\Controllers\Api\EstadoInscripcionController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -33,6 +34,8 @@ use App\Http\Controllers\Api\AdminConvocatoriaController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::get('/estado-inscripcion/{ci}', [EstadoInscripcionController::class, 'show']);
+Route::post('/areas', [AreaController::class, 'store']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
