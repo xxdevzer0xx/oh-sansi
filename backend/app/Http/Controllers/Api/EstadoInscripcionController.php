@@ -24,9 +24,10 @@ class EstadoInscripcionController extends Controller
 
         if (!$estudiante) {
             return response()->json([
-                'message' => 'No se encontró una inscripción correspondiente al número ingresado.',
-            ], 404);
+                'estado' => 'No inscrito'
+            ]);
         }
+        
 
         // Buscar convocatoria activa
         $convocatoria = DB::table('convocatorias')

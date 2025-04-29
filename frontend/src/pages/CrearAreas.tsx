@@ -70,7 +70,7 @@ export default function CrearArea() {
             onChange={(e) => setDescripcion(e.target.value)}
             className="w-full border px-3 py-2 rounded-md"
             maxLength={200}
-            required
+            //required
           />
         </div>
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
