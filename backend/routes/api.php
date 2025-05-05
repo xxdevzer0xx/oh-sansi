@@ -36,6 +36,9 @@ use App\Http\Controllers\Api\EstadoInscripcionController;
 */
 Route::get('/estado-inscripcion/{ci}', [EstadoInscripcionController::class, 'show']);
 Route::post('/areas', [AreaController::class, 'store']);
+Route::get('/areas', [AreaController::class, 'index']);
+
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

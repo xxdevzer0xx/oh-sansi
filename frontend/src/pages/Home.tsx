@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Trophy, FlaskRound as Flask, Code, Calendar, Phone, Mail, MapPin } from 'lucide-react';
 
 export default function Home() {
+  const navigate = useNavigate();
   return (
     <>
       {/* Hero Section */}
@@ -16,9 +18,18 @@ export default function Home() {
         <div className="text-center text-white">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Oh! SanSi - Olimpiadas de Ciencias y Tecnología</h1>
           <p className="text-xl mb-8">Inscríbete y participa en las áreas de tu interés</p>
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition">
+          <button className="bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition"
+            //onClick={() => navigate('/inscripcion')}          
+          >
             Iniciar Inscripción →
           </button>
+
+          <button 
+              className="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-blue-100 transition"
+              onClick={() => navigate('/estadoInscripcion')}
+            >
+              Ver estado de inscripción
+            </button>
         </div>
       </div>
 

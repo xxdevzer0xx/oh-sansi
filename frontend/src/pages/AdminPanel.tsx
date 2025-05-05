@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CrearAreas from './CrearAreas';
 import { 
   getConvocatoriasActivas, 
   getAreasCompetencia,
@@ -12,11 +13,18 @@ import {
 } from '../api/adminConvocatoriaApi';
 
 export default function AdminPanel() {
+  const [seccionActiva, setSeccionActiva] = useState('');
+
+  const toggleSeccion = (seccion: string) => {
+    setSeccionActiva((prev) => (prev === seccion ? '' : seccion));
+  };
+
+
   // Estados para controlar qué formulario mostrar
   const [showCrearConvocatoriaForm, setShowCrearConvocatoriaForm] = useState(false);
   const [showAsignarAreasForm, setShowAsignarAreasForm] = useState(false);
   const [showConfigurarNivelesForm, setShowConfigurarNivelesForm] = useState(false);
-  
+  const [showCrearAreasForm, setShowCrearAreasForm] = useState(false);
   // Estados para datos y selecciones
   const [convocatorias, setConvocatorias] = useState([]);
   const [areas, setAreas] = useState([]);
@@ -681,7 +689,7 @@ export default function AdminPanel() {
               setShowCrearConvocatoriaForm(!showCrearConvocatoriaForm);
               setShowAsignarAreasForm(false);
               setShowConfigurarNivelesForm(false);
-              
+              setShowCrearAreasForm(false);
               if (showCrearConvocatoriaForm) {
                 // Reiniciar el formulario al cerrar
                 setFormDataConvocatoria({
@@ -693,7 +701,7 @@ export default function AdminPanel() {
                 });
               }
             }}
-            className={`px-4 py-2 rounded-md font-medium transition ${
+            className={`mb-4 px-4 py-2 rounded-md text-white ${
               showCrearConvocatoriaForm 
                 ? 'bg-red-500 hover:bg-red-600 text-white' 
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -701,20 +709,43 @@ export default function AdminPanel() {
           >
             {showCrearConvocatoriaForm ? 'Cancelar' : 'Crear Convocatoria'}
           </button>
-          
+          <button
+          onClick={() => {
+            setShowCrearAreasForm(!showCrearAreasForm);
+            setShowCrearConvocatoriaForm(false);
+            setShowAsignarAreasForm(false);
+            setShowConfigurarNivelesForm(false);
+        
+            if (showCrearAreasForm) {
+              // Resetear campos si estás cerrando el formulario
+              setFormDataArea({
+                nombre: '',
+                descripcion: '',
+              });
+            }
+            }}
+            className={`mb-4 px-4 py-2 rounded-md text-white ${
+              showCrearAreasForm
+                ? 'bg-red-500 hover:bg-red-600'
+                : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {showCrearAreasForm ? 'Cancelar' : 'Crear Área'}
+          </button>
+
           <button 
             onClick={() => {
               setShowAsignarAreasForm(!showAsignarAreasForm);
               setShowCrearConvocatoriaForm(false);
               setShowConfigurarNivelesForm(false);
-              
+              setShowCrearAreasForm(false);
               if (showAsignarAreasForm) {
                 // Reiniciar el formulario al cerrar
                 setSelectedConvocatoria('');
                 setSelectedAreas([]);
               }
             }}
-            className={`px-4 py-2 rounded-md font-medium transition ${
+            className={`mb-4 px-4 py-2 rounded-md text-white ${
               showAsignarAreasForm 
                 ? 'bg-red-500 hover:bg-red-600 text-white' 
                 : 'bg-green-600 hover:bg-green-700 text-white'
@@ -722,13 +753,14 @@ export default function AdminPanel() {
           >
             {showAsignarAreasForm ? 'Cancelar' : 'Asignar Áreas'}
           </button>
-          
+        
+
           <button 
             onClick={() => {
               setShowConfigurarNivelesForm(!showConfigurarNivelesForm);
               setShowCrearConvocatoriaForm(false);
               setShowAsignarAreasForm(false);
-              
+              setShowCrearAreasForm(false);
               if (showConfigurarNivelesForm) {
                 // Reiniciar el formulario al cerrar
                 setSelectedConvocatoriaNiveles('');
@@ -736,7 +768,7 @@ export default function AdminPanel() {
                 setNivelGrados({});
               }
             }}
-            className={`px-4 py-2 rounded-md font-medium transition ${
+            className={`mb-4 px-4 py-2 rounded-md text-white ${
               showConfigurarNivelesForm 
                 ? 'bg-red-500 hover:bg-red-600 text-white' 
                 : 'bg-purple-600 hover:bg-purple-700 text-white'
@@ -746,6 +778,12 @@ export default function AdminPanel() {
           </button>
         </div>
       </div>
+      {/* Contenido dinámico debajo de los botones */}
+      {showCrearAreasForm && (
+        <div className="bg-white p-6 rounded-md shadow-md">
+          <CrearAreas />
+        </div>
+      )}
 
       {/* Formulario para Crear Convocatoria */}
       {showCrearConvocatoriaForm && (

@@ -13,13 +13,11 @@ class AreaController extends ApiController
      * Display a listing of the resource.
      */
     public function index(): JsonResponse
-    {
-        $areas = AreaCompetencia::all();
-        return $this->successResponse(
-            $areas,
-            'Áreas de competencia obtenidas correctamente'
-        );
-    }
+{
+    $nombres = AreaCompetencia::orderBy('nombre_area')->pluck('nombre_area');
+    return response()->json($nombres);
+}
+
 
     /**
      * Store a newly created resource in storage.
@@ -28,7 +26,8 @@ class AreaController extends ApiController
     {
         $validator = Validator::make($request->all(), [
             'nombre_area' => 'required|string|max:100|unique:areas_competencia,nombre_area',
-            'descripcion' => 'required|string|max:200',
+            'descripcion' => 'nullable|string|max:200',
+
         ]);
 
         if ($validator->fails()) {
@@ -77,7 +76,8 @@ class AreaController extends ApiController
 
         $validator = Validator::make($request->all(), [
             'nombre_area' => 'sometimes|required|string|max:100|unique:areas_competencia,nombre_area,' . $area->id_area . ',id_area',
-            'descripcion' => 'sometimes|required|string|max:200',
+            'descripcion' => 'sometimes|nullable|string|max:200',
+
         ]);
 
         if ($validator->fails()) {
