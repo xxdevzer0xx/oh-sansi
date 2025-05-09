@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Check, ChevronRight, Upload, X, AlertCircle, Plus, Trash2, Copy, Users } from 'lucide-react';
 import { verificarCodigoOrden, subirComprobantePago } from '../api/comprobantePagoApi';
 import { getDatosInscripcion, getAreasPorGrado, inscribirEstudiante, buscarUnidadesEducativas } from '../api/inscripcionCompletaApi';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // Definir una interfaz para la estructura de datos de un estudiante
 interface EstudianteFormData {
@@ -27,12 +29,12 @@ interface EstudianteFormData {
     parentesco: string;
     es_el_mismo_estudiante: boolean;
   };
-  areas_seleccionadas: Array<any>;
   tutores_academicos: Array<any>;
-  selectedAreas: Array<any>;
+  areas_seleccionadas: Array<any>;
 }
 
 export default function Registration() {
+  const componentRef = useRef<HTMLDivElement>(null);
   // Estados originales para verificación de código
   const [step, setStep] = useState(1);
   const [verificationCode, setVerificationCode] = useState('');
@@ -43,9 +45,10 @@ export default function Registration() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState(''); // Error para sección "Completar Inscripción"
   const [formErrorMessage, setFormErrorMessage] = useState(''); // Error para sección "Proceso de Inscripción"
-  
+  const codigo_unico = `OCEP-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
   // Estados para la inscripción
   const [isLoading, setIsLoading] = useState(false);
   const [convocatoria, setConvocatoria] = useState(null);
@@ -87,8 +90,29 @@ export default function Registration() {
     tutores_academicos: [],
   });
   
+  const fetchCodigoUnico = async () => {
+    try {
+      const  datos = {
+        lista_inscripcion:estudiantes,
+          id_convocatoria:"1",
+          codigo_unico: codigo_unico
+
+      };
+
+
+      console.log(datos);
+      const data = await inscribirEstudiante( JSON.stringify(datos) , openBoletaModal);
+      console.log(data);
+
+
+
+    } catch (error) {
+      console.error("Error al obtener el código:", error);
+      setIsLoading(false);
+    }
+};
   // Estado para rastrear las áreas seleccionadas con sus niveles y costos
-  const [selectedAreas, setSelectedAreas] = useState([]);
+  const [areas_seleccionadas, setSelectedAreas] = useState([]);
   
   // Estado para almacenar el costo total
   const [costoTotal, setCostoTotal] = useState(0);
@@ -112,21 +136,41 @@ export default function Registration() {
     setSelectedStudentDetails(null);
   };
 
+ 
+
   // Función para abrir el modal de la boleta de pago
-  const openBoletaModal = () => {
+  const openBoletaModal = async () => {
     setIsBoletaModalOpen(true);
     
     // Iniciar descarga automáticamente
     console.log("Iniciando descarga automática de boleta...");
     // En un caso real, aquí se haría la llamada a la API para generar y descargar el PDF
-    setTimeout(() => {
-      // Simulación de descarga completada
-      console.log("Boleta descargada automáticamente");
-    }, 1000);
+    
+    generatePDF();
+  };
+
+  const generatePDF = async () => {
+    if (!componentRef.current) return;
+    const payment =componentRef.current;
+
+    const canvas = await html2canvas(payment , {scale:  window.devicePixelRatio });
+    const imgData = canvas.toDataURL('image/png');
+
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'px',
+      format: [ canvas.width , canvas.height],
+    });
+
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+
+    const date = new Date();
+    const dateParsed = date.getDate() + "-"+ date.getMonth()+ "-" +date.getFullYear();
+    pdf.save(`Boleta de inscripcion ${dateParsed}.pdf`);
   };
 
   // Función para cerrar el modal de la boleta de pago y resetear
-  const closeBoletaModal = () => {
+  const closeBoletaModal = () => {``
     setIsBoletaModalOpen(false);
     
     // Resetear datos y redirigir al step 1
@@ -199,9 +243,9 @@ export default function Registration() {
         parentesco: '',
         es_el_mismo_estudiante: false,
       },
-      areas_seleccionadas: [],
+
       tutores_academicos: [],
-      selectedAreas: []
+      areas_seleccionadas: []
     };
   };
 
@@ -235,14 +279,14 @@ export default function Registration() {
       }
       
       // Solo actualizamos las áreas seleccionadas si son diferentes
-      if (JSON.stringify(selectedAreas) !== JSON.stringify(activeStudent.selectedAreas || [])) {
-        setSelectedAreas(activeStudent.selectedAreas || []);
+      if (JSON.stringify(areas_seleccionadas) !== JSON.stringify(activeStudent.areas_seleccionadas || [])) {
+        setSelectedAreas(activeStudent.areas_seleccionadas || []);
       }
       
       // Calculamos el costo solo cuando cambiamos de estudiante
       let costoEstudiante = 0;
-      if (activeStudent.selectedAreas && activeStudent.selectedAreas.length > 0) {
-        costoEstudiante = activeStudent.selectedAreas.reduce((total, area) => 
+      if (activeStudent.areas_seleccionadas && activeStudent.areas_seleccionadas.length > 0) {
+        costoEstudiante = activeStudent.areas_seleccionadas.reduce((total, area) => 
           total + (parseFloat(area.costo) || 0), 0);
       }
       setCostoTotal(costoEstudiante);
@@ -252,8 +296,8 @@ export default function Registration() {
   // Recalcular costo total general cuando cambian las áreas seleccionadas de cualquier estudiante
   useEffect(() => {
     const costoGeneral = estudiantes.reduce((total, estudiante) => {
-      if (estudiante.selectedAreas && estudiante.selectedAreas.length > 0) {
-        return total + estudiante.selectedAreas.reduce((subtotal, area) => 
+      if (estudiante.areas_seleccionadas && estudiante.areas_seleccionadas.length > 0) {
+        return total + estudiante.areas_seleccionadas.reduce((subtotal, area) => 
           subtotal + (parseFloat(area.costo) || 0), 0);
       }
       return total;
@@ -277,7 +321,7 @@ export default function Registration() {
         unidad_educativa: newFormData.unidad_educativa,
         tutor_legal: newFormData.tutor_legal,
         tutores_academicos: newFormData.tutores_academicos,
-        selectedAreas: newSelectedAreas
+        areas_seleccionadas: newSelectedAreas
       };
       setEstudiantes(updatedEstudiantes);
     }
@@ -530,10 +574,10 @@ export default function Registration() {
   // Función para manejar la selección de áreas
   const handleAreaSelect = (areaNivel) => {
     // Verificar si ya está seleccionada
-    const isSelected = selectedAreas.some(item => item.id_convocatoria_nivel === areaNivel.id_convocatoria_nivel);
+    const isSelected = areas_seleccionadas.some(item => item.id_convocatoria_nivel === areaNivel.id_convocatoria_nivel);
     
     // Verificar límite de áreas si estamos añadiendo una nueva
-    if (!isSelected && convocatoria && selectedAreas.length >= convocatoria.max_areas) {
+    if (!isSelected && convocatoria && areas_seleccionadas.length >= convocatoria.max_areas) {
       setFormErrorMessage(`Solo puede seleccionar hasta ${convocatoria.max_areas} áreas por estudiante`);
       return;
     }
@@ -546,10 +590,10 @@ export default function Registration() {
     let newCostoTotal = costoTotal;
     
     if (isSelected) {
-      updatedSelectedAreas = selectedAreas.filter(item => item.id_convocatoria_nivel !== areaNivel.id_convocatoria_nivel);
+      updatedSelectedAreas = areas_seleccionadas.filter(item => item.id_convocatoria_nivel !== areaNivel.id_convocatoria_nivel);
       newCostoTotal -= costo;
     } else {
-      updatedSelectedAreas = [...selectedAreas, {
+      updatedSelectedAreas = [...areas_seleccionadas, {
         id_convocatoria_nivel: areaNivel.id_convocatoria_nivel,
         area_nombre: areaNivel.area.nombre,
         nivel_nombre: areaNivel.nivel.nombre,
@@ -594,6 +638,8 @@ export default function Registration() {
 
   // Función para validar campos obligatorios del paso 1
   const validateStep1 = () => {
+    let isValid = true;
+    let currentErrors = {};
     // Lista de campos obligatorios del estudiante
     const requiredFields = [
       { field: formData.nombres, name: 'Nombres' },
@@ -615,6 +661,28 @@ export default function Registration() {
       { field: formData.tutor_legal.parentesco, name: 'Parentesco del Tutor Legal' },
     ];
     
+    // Validar campos del estudiante
+    const nombresError = validateField('nombres', formData.nombres);
+    if (nombresError) {
+      currentErrors.nombres = nombresError;
+      isValid = false;
+    }
+    const apellidosError = validateField('apellidos', formData.apellidos);
+    if (apellidosError) {
+      currentErrors.apellidos = apellidosError;
+      isValid = false;
+    }
+    const ciError = validateField('ci', formData.ci);
+    if (ciError) {
+      currentErrors.ci = ciError;
+      isValid = false;
+    }
+    const fechaNacimientoError = validateField('fecha_nacimiento', formData.fecha_nacimiento);
+    if (fechaNacimientoError) {
+      currentErrors.fecha_nacimiento = fechaNacimientoError;
+      isValid = false;
+    }
+
     // Verificar campos del estudiante
     for (const { field, name } of requiredFields) {
       if (!field || field.trim() === '') {
@@ -645,8 +713,11 @@ export default function Registration() {
     }
     
     // Si todo es válido
-    setFormErrorMessage('');
-    return true;
+    setFormErrors(currentErrors);
+    setFormErrorMessage(isValid ? '' : 'Por favor, corrija los errores en el formulario.');
+    //setFormErrorMessage('');
+    //return true;
+    return isValid;
   };
   
   // Función para validar todos los estudiantes antes de avanzar al siguiente paso
@@ -697,7 +768,7 @@ export default function Registration() {
     } else if (step === 2) {
       // Verificar si al menos un estudiante tiene áreas seleccionadas
       const hasSelectedAreas = estudiantes.some(e => 
-        e.selectedAreas && e.selectedAreas.length > 0
+        e.areas_seleccionadas && e.areas_seleccionadas.length > 0
       );
       
       if (!hasSelectedAreas) {
@@ -716,7 +787,8 @@ export default function Registration() {
   const handleFormChange = (field, value) => {
     const newFormData = { ...formData, [field]: value };
     setFormData(newFormData);
-    updateActiveStudent(newFormData, selectedAreas);
+    setFormErrors({ ...formErrors, [name]: '' });
+    updateActiveStudent(newFormData, areas_seleccionadas);
   };
 
   // Función para manejar cambios en los campos anidados
@@ -729,7 +801,56 @@ export default function Registration() {
       } 
     };
     setFormData(newFormData);
-    updateActiveStudent(newFormData, selectedAreas);
+    setFormErrors({ ...formErrors, [parent]: { ...formErrors[parent], [child]: '' } });
+    updateActiveStudent(newFormData, areas_seleccionadas);
+  };
+
+  const validateField = (name, value) => {
+    let error = '';
+    switch (name) {
+      case 'nombres':
+      case 'apellidos':
+        if (value.length > 50) {
+          error = 'El campo debe contener menos de 50 caracteres.';
+        } else if (!/^[a-zA-Z\s]*$/.test(value)) {
+          error = 'No se permiten números ni caracteres especiales.';
+        }
+        break;
+      case 'ci':
+        if (!/^\d{1,8}$/.test(value)) {
+          error = 'Debe ser un valor numérico de hasta 8 dígitos.';
+        }
+        break;
+      case 'fecha_nacimiento':
+        const selectedDate = new Date(value);
+        const currentDate = new Date();
+        if (selectedDate >= currentDate) {
+          error = 'La fecha debe ser menor a la fecha actual.';
+        }
+        break;
+      case 'telefono':
+        if (value && !/^\d{1,8}$/.test(value)) {
+          error = 'Solo se permiten números con un máximo de 8 dígitos.';
+        }
+        break;
+      case 'unidad_educativa':
+        if (value.nombre.length > 50) {
+          error = { ...error, nombre: 'Debe contener menos de 50 caracteres.' };
+        } else if (!/^[a-zA-Z\s]*$/.test(value.nombre)) {
+          error = { ...error, nombre: 'No se permiten caracteres especiales.' };
+        }
+        break;
+      case 'unidad_educativa.provincia':
+        if (value.length > 50) {
+          error = 'Debe contener menos de 50 caracteres.';
+        } else if (!/^[a-zA-Z\s]*$/.test(value)) {
+          error = 'No se permiten números ni caracteres especiales.';
+        }
+        break;
+      default:
+        break;
+    }
+    return error;
   };
 
   // Actualizar los tutores en el paso 3
@@ -747,7 +868,7 @@ export default function Registration() {
       };
       
       setFormData(newFormData);
-      updateActiveStudent(newFormData, selectedAreas);
+      updateActiveStudent(newFormData, areas_seleccionadas);
     }
   };
 
@@ -1150,8 +1271,10 @@ export default function Registration() {
                     placeholder="Ingrese sus nombres"
                     value={formData.nombres}
                     onChange={(e) => handleFormChange('nombres', e.target.value)}
+                    maxLength={50}
                     required
                   />
+                  {formErrors.nombres && <p className="text-red-500 text-xs mt-1">{formErrors.nombres}</p>}
                 </div>
 
                 {/* Apellidos */}
@@ -1166,8 +1289,10 @@ export default function Registration() {
                     placeholder="Ingrese sus apellidos"
                     value={formData.apellidos}
                     onChange={(e) => handleFormChange('apellidos', e.target.value)}
+                    maxLength={50}
                     required
                   />
+                  {formErrors.apellidos && <p className="text-red-500 text-xs mt-1">{formErrors.apellidos}</p>}
                 </div>
 
                 {/* Cédula de Identidad */}
@@ -1176,14 +1301,23 @@ export default function Registration() {
                     Cédula de Identidad<span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     id="cedula"
                     className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Número de CI"
                     value={formData.ci}
                     onChange={(e) => handleFormChange('ci', e.target.value)}
+                    onKeyPress={(event) => {
+                      if (event.target.value.length >= 8 && event.key !== 'Backspace' && event.key !== 'Delete' && !(event.ctrlKey && (event.key === 'c' || event.key === 'v'))) {
+                        event.preventDefault();
+                      }
+                    }}
                     required
+                    min="0" 
+                    step="1"
+                    maxLength={8}
                   />
+                  {formErrors.ci && <p className="text-red-500 text-xs mt-1">{formErrors.ci}</p>}
                 </div>
 
                 {/* Fecha de Nacimiento */}
@@ -1205,6 +1339,7 @@ export default function Registration() {
                       <Calendar size={18} className="text-gray-400" />
                     </div>
                   </div>
+                  {formErrors.fecha_nacimiento && <p className="text-red-500 text-xs mt-1">{formErrors.fecha_nacimiento}</p>}
                 </div>
 
                 {/* Correo Electrónico */}
@@ -1229,11 +1364,22 @@ export default function Registration() {
                     Teléfono
                   </label>
                   <input
-                    type="tel"
+                    type="number"
                     id="telefono"
-                    className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${formErrors.telefono ? 'border-red-500' : ''}`}
                     placeholder="Número de teléfono"
+                    value={formData.telefono}
+                    onChange={(e) => handleFormChange('telefono', e.target.value)}
+                    onKeyPress={(event) => {
+                      if (event.target.value.length >= 8 && event.key !== 'Backspace' && event.key !== 'Delete' && !(event.ctrlKey && (event.key === 'c' || event.key === 'v'))) {
+                        event.preventDefault();
+                      }
+                    }}
+                    min="0" 
+                    step="1"
+                    maxLength={8}
                   />
+                  {formErrors.telefono && <p className="text-red-500 text-xs mt-1">{formErrors.telefono}</p>}
                 </div>
 
                 {/* Unidad Educativa - Cambiado de dropdown a campo de texto */}
@@ -1248,8 +1394,12 @@ export default function Registration() {
                     placeholder="Ingrese su unidad educativa"
                     value={formData.unidad_educativa.nombre}
                     onChange={(e) => handleNestedChange('unidad_educativa', 'nombre', e.target.value)}
+                    maxLength={50}
                     required
                   />
+                  {formErrors.unidad_educativa?.nombre && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.unidad_educativa.nombre}</p>
+                  )}
                 </div>
 
                 {/* Curso */}
@@ -1323,8 +1473,12 @@ export default function Registration() {
                     placeholder="Ingrese su provincia"
                     value={formData.unidad_educativa.provincia}
                     onChange={(e) => handleNestedChange('unidad_educativa', 'provincia', e.target.value)}
+                    maxLength={50}
                     required
                   />
+                  {formErrors.unidad_educativa?.provincia && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.unidad_educativa.provincia}</p>
+                  )}
                 </div>
               </div>
 
@@ -1371,13 +1525,19 @@ export default function Registration() {
                       Cédula de Identidad<span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="text"
+                      type="number"
                       id="cedulaTutorLegal"
                       className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Número de CI"
                       value={formData.tutor_legal.ci}
-                      onChange={(e) => handleNestedChange('tutor_legal', 'ci', e.target.value)}
+                    
+                      onChange={(e) => {
+                        // Validar que solo se ingresen números
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        handleNestedChange('tutor_legal', 'ci', value);
+                      }}
                       required
+                      maxLength={8}
                     />
                   </div>
 
@@ -1391,6 +1551,7 @@ export default function Registration() {
                       className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white"
                       value={formData.tutor_legal.parentesco}
                       onChange={(e) => handleNestedChange('tutor_legal', 'parentesco', e.target.value)}
+
                       required
                     >
                       <option value="">Selecciona el parentesco</option>
@@ -1425,13 +1586,19 @@ export default function Registration() {
                       Teléfono<span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="tel"
+                      type="number"
                       id="telefonoTutorLegal"
                       className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Número de teléfono"
                       value={formData.tutor_legal.telefono}
-                      onChange={(e) => handleNestedChange('tutor_legal', 'telefono', e.target.value)}
+                   
+                      onChange={(e) => {
+                        // Validar que solo se ingresen números
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        handleNestedChange('tutor_legal', 'telefono', value);
+                      }}
                       required
+                      maxLength={8}
                     />
                   </div>
                 </div>
@@ -1473,7 +1640,7 @@ export default function Registration() {
                       <h4 className="text-base font-semibold">Áreas Disponibles</h4>
                       {convocatoria && (
                         <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                          {selectedAreas.length}/{convocatoria.max_areas}
+                          {areas_seleccionadas.length}/{convocatoria.max_areas}
                         </span>
                       )}
                       <div className="ml-2 text-gray-400 cursor-help" title="Puedes seleccionar hasta el máximo de áreas permitidas">
@@ -1504,7 +1671,7 @@ export default function Registration() {
                           <input 
                             type="checkbox" 
                             className="h-5 w-5 text-blue-600" 
-                            checked={selectedAreas.some(area => area.id_convocatoria_nivel === areaNivel.id_convocatoria_nivel)}
+                            checked={areas_seleccionadas.some(area => area.id_convocatoria_nivel === areaNivel.id_convocatoria_nivel)}
                             onChange={() => handleAreaSelect(areaNivel)}
                           />
                         </div>
@@ -1512,7 +1679,7 @@ export default function Registration() {
                       <div className="flex justify-between items-center">
                         <p className="text-sm text-gray-600">Nivel: <strong>{areaNivel.nivel.nombre}</strong></p>
                       </div>
-                      {selectedAreas.some(area => area.id_convocatoria_nivel === areaNivel.id_convocatoria_nivel) && (
+                      {areas_seleccionadas.some(area => area.id_convocatoria_nivel === areaNivel.id_convocatoria_nivel) && (
                         <div className="mt-3 pt-3 border-t">
                           <p className="text-xs text-green-600">✓ Área seleccionada. En el siguiente paso deberás ingresar la información del tutor académico.</p>
                         </div>
@@ -1521,7 +1688,7 @@ export default function Registration() {
                   ))}
                   
                   {/* Mensaje para seleccionar al menos un área */}
-                  {selectedAreas.length === 0 && (
+                  {areas_seleccionadas.length === 0 && (
                     <div className="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-md mt-4">
                       <p className="text-yellow-700 text-sm">Debes seleccionar al menos un área para continuar</p>
                     </div>
@@ -1539,7 +1706,7 @@ export default function Registration() {
                 <button
                   onClick={handleNextStep}
                   className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 flex items-center"
-                  disabled={selectedAreas.length === 0}
+                  disabled={areas_seleccionadas.length === 0}
                 >
                   <span className="mr-2">Continuar</span>
                   <ChevronRight size={16} />
@@ -1573,7 +1740,7 @@ export default function Registration() {
                 </button>
               </div>
 
-              {selectedAreas.length === 0 ? (
+              {areas_seleccionadas.length === 0 ? (
                 <div className="text-center p-8 border rounded-lg">
                   <p className="text-gray-600 mb-2">No has seleccionado áreas en el paso anterior</p>
                   <p className="text-sm text-gray-500">Por favor, regresa al paso anterior y selecciona al menos un área.</p>
@@ -1581,7 +1748,7 @@ export default function Registration() {
               ) : (
                 <>
                   {/* Tutores académicos para cada área seleccionada */}
-                  {selectedAreas.map((area, index) => {
+                  {areas_seleccionadas.map((area, index) => {
                     // Encontrar el índice del tutor académico correspondiente
                     const tutorIndex = formData.tutores_academicos.findIndex(
                       tutor => tutor.id_convocatoria_nivel === area.id_convocatoria_nivel
@@ -1645,13 +1812,19 @@ export default function Registration() {
                               Teléfono
                             </label>
                             <input
-                              type="tel"
+                              type="number"
                               id={`telefono_${area.id_convocatoria_nivel}`}
                               className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                               placeholder="Número de teléfono"
                               value={tutorIndex >= 0 ? formData.tutores_academicos[tutorIndex].telefono : ''}
-                              onChange={(e) => handleTutorAcademicoChange(tutorIndex, 'telefono', e.target.value)}
-                            />
+                              // onChange={(e) => handleTutorAcademicoChange(tutorIndex, 'telefono', e.target.value)}
+                              onChange={(e) => {
+                                // Validar que solo se ingresen números
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                handleTutorAcademicoChange(tutorIndex, 'telefono', value);
+                              }}
+                              maxLength={8}
+                              />
                           </div>
                         </div>
 
@@ -1671,6 +1844,7 @@ export default function Registration() {
                               const value = e.target.value.replace(/[^0-9]/g, '');
                               handleTutorAcademicoChange(tutorIndex, 'ci', value);
                             }}
+                            maxLength={8}
                           />
                         </div>
                       </div>
@@ -1755,8 +1929,8 @@ export default function Registration() {
                 <div className="space-y-4">
                   {estudiantes.map((estudiante, index) => {
                     // Cálculo del costo por estudiante
-                    const costoPorEstudiante = estudiante.selectedAreas ? 
-                      estudiante.selectedAreas.reduce((total, area) => total + (parseFloat(area.costo) || 0), 0) : 0;
+                    const costoPorEstudiante = estudiante.areas_seleccionadas ? 
+                      estudiante.areas_seleccionadas.reduce((total, area) => total + (parseFloat(area.costo) || 0), 0) : 0;
                       
                     // Determinar el color para el acordeón
                     const acordeonColor = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
@@ -1809,8 +1983,8 @@ export default function Registration() {
                           <div className="mt-3">
                             <p className="text-sm font-medium mb-2">Áreas seleccionadas:</p>
                             <div className="space-y-1">
-                              {estudiante.selectedAreas && estudiante.selectedAreas.length > 0 ? 
-                                estudiante.selectedAreas.map((area, i) => (
+                              {estudiante.areas_seleccionadas && estudiante.areas_seleccionadas.length > 0 ? 
+                                estudiante.areas_seleccionadas.map((area, i) => (
                                   <div key={i} className="flex justify-between text-sm border-b pb-1">
                                     <span>{area.area_nombre} - {area.nivel_nombre}</span>
                                     <span>{area.costo} Bs.</span>
@@ -1851,6 +2025,8 @@ export default function Registration() {
                 <button
                   className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 flex items-center justify-center"
                   onClick={() => {
+                    console.log(estudiantes);
+                    fetchCodigoUnico();
                     openBoletaModal(); // Abre el modal con los detalles de la boleta
                     // La funcionalidad de descarga se implementará posteriormente
                   }}
@@ -1986,9 +2162,9 @@ export default function Registration() {
               {/* Áreas y tutores académicos */}
               <div className="mb-6">
                 <h4 className="font-medium text-gray-800 mb-2 border-b pb-1">Áreas seleccionadas</h4>
-                {selectedStudentDetails.selectedAreas && selectedStudentDetails.selectedAreas.length > 0 ? (
+                {selectedStudentDetails.areas_seleccionadas && selectedStudentDetails.areas_seleccionadas.length > 0 ? (
                   <div className="space-y-4">
-                    {selectedStudentDetails.selectedAreas.map((area, index) => {
+                    {selectedStudentDetails.areas_seleccionadas.map((area, index) => {
                       // Buscar el tutor académico para esta área
                       const tutorAcademico = selectedStudentDetails.tutores_academicos?.find(
                         tutor => tutor.id_convocatoria_nivel === area.id_convocatoria_nivel
@@ -2072,7 +2248,7 @@ export default function Registration() {
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <p className="text-sm text-gray-500">Código de Inscripción</p>
-                    <p className="font-medium">OCEP-{new Date().getFullYear()}-{Math.floor(10000 + Math.random() * 90000)}</p>
+                    <p className="font-medium">{codigo_unico}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-500">Fecha</p>
@@ -2086,7 +2262,7 @@ export default function Registration() {
                   <p className="text-sm text-gray-500">CI: {estudiantes[0]?.tutor_legal.ci}</p>
                 </div>
                 
-                <div className="border rounded-lg p-4 mb-4 bg-gray-50">
+                <div ref={componentRef} className="border rounded-lg p-4 mb-4 bg-gray-50">
                   <h4 className="font-medium text-gray-800 mb-3">Detalle de Estudiantes</h4>
                   <div className="border-t border-b py-2">
                     <div className="grid grid-cols-12 gap-2 mb-2 text-sm font-medium">
@@ -2098,8 +2274,8 @@ export default function Registration() {
                     </div>
                     
                     {estudiantes.map((estudiante, index) => {
-                      const costoPorEstudiante = estudiante.selectedAreas ? 
-                        estudiante.selectedAreas.reduce((total, area) => total + (parseFloat(area.costo) || 0), 0) : 0;
+                      const costoPorEstudiante = estudiante.areas_seleccionadas ? 
+                        estudiante.areas_seleccionadas.reduce((total, area) => total + (parseFloat(area.costo) || 0), 0) : 0;
                         
                       return (
                         <div key={estudiante.id} className="grid grid-cols-12 gap-2 mb-1 text-sm py-1 border-b border-gray-100">
@@ -2107,9 +2283,9 @@ export default function Registration() {
                           <div className="col-span-4">{estudiante.nombres} {estudiante.apellidos}</div>
                           <div className="col-span-2">{estudiante.ci}</div>
                           <div className="col-span-3">
-                            {estudiante.selectedAreas && estudiante.selectedAreas.length > 0 ? (
+                            {estudiante.areas_seleccionadas && estudiante.areas_seleccionadas.length > 0 ? (
                               <div className="flex flex-col">
-                                {estudiante.selectedAreas.map((area, i) => (
+                                {estudiante.areas_seleccionadas.map((area, i) => (
                                   <span key={i} className="text-xs">{area.area_nombre} - {area.nivel_nombre}</span>
                                 ))}
                               </div>
