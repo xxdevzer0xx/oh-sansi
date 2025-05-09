@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\ConvocatoriaCompletaController;
 use App\Http\Controllers\Api\AdminConvocatoriaController;
 
+use App\Http\Controllers\Api\AmpliarFechaController;
 use App\Http\Controllers\Api\AreaController;
 use App\Http\Controllers\Api\EstadoInscripcionController;
 
@@ -45,7 +46,8 @@ Route::get('/estado-inscripcion/{ci}', [EstadoInscripcionController::class, 'sho
 Route::post('/areas', [AreaController::class, 'store']);
 Route::get('/areas', [AreaController::class, 'index']);
 
-
+Route::get('/convocatorias', [AmpliarFechaController::class, 'index']);
+Route::put('/convocatorias/{id}/ampliar-fecha', [AmpliarFechaController::class, 'actualizarFecha']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

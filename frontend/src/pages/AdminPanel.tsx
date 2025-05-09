@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CrearAreas from './CrearAreas';
+import AmpliarFecha from './AmpliarFecha';
 import { 
   getConvocatoriasActivas, 
   getAreasCompetencia,
@@ -38,6 +39,7 @@ export default function AdminPanel() {
   const [showConfigurarNivelesForm, setShowConfigurarNivelesForm] = useState(false);
   const [showCrearAreasForm, setShowCrearAreasForm] = useState(false);
   const [showCrearNivelForm, setShowCrearNivelForm] = useState(false);
+  const [showAmpliarFechaForm, setShowAmpliarFechaForm] = useState(false);
   // Estado para el formulario de costo general
   const [showCostoGeneralForm, setShowCostoGeneralForm] = useState(false);
   const [selectedConvocatoriaCosto, setSelectedConvocatoriaCosto] = useState('');
@@ -986,7 +988,8 @@ export default function AdminPanel() {
               setShowConfigurarNivelesForm(false);
               setShowCrearAreasForm(false);
               setShowCrearNivelForm(false);
-              
+              setShowCostoGeneralForm(false);
+              setShowAmpliarFechaForm(false);
               if (showCrearConvocatoriaForm) {
                 // Reiniciar el formulario al cerrar
                 setFormDataConvocatoria({
@@ -1013,6 +1016,8 @@ export default function AdminPanel() {
             setShowAsignarAreasForm(false);
             setShowConfigurarNivelesForm(false);
             setShowCrearNivelForm(false);
+            setShowCostoGeneralForm(false);
+            setShowAmpliarFechaForm(false);
             if (showCrearAreasForm) {
               // Resetear campos si estás cerrando el formulario
               setFormDataArea({
@@ -1037,7 +1042,8 @@ export default function AdminPanel() {
               setShowConfigurarNivelesForm(false);
               setShowCrearAreasForm(false);
               setShowCrearNivelForm(false);
-              
+              setShowCostoGeneralForm(false);
+              setShowAmpliarFechaForm(false);
               if (showAsignarAreasForm) {
                 // Reiniciar el formulario al cerrar
                 setSelectedConvocatoria('');
@@ -1061,7 +1067,8 @@ export default function AdminPanel() {
               setShowAsignarAreasForm(false);
               setShowCrearAreasForm(false);
               setShowCrearNivelForm(false);
-              
+              setShowCostoGeneralForm(false);
+              setShowAmpliarFechaForm(false);
               if (showConfigurarNivelesForm) {
                 // Reiniciar el formulario al cerrar
                 setSelectedConvocatoriaNiveles('');
@@ -1085,13 +1092,15 @@ export default function AdminPanel() {
               setShowAsignarAreasForm(false);
               setShowConfigurarNivelesForm(false);
               setShowCrearAreasForm(false);
+              setShowCostoGeneralForm(false);
+              setShowAmpliarFechaForm(false);
               if (showCrearNivelForm) {
                 // Reiniciar el formulario al cerrar
                 setNuevoNivel('');
                 setNivelError('');
               }
             }}
-            className={`px-4 py-2 rounded-md font-medium transition ${
+            className={`mb-4 px-4 py-2 rounded-md text-white ${
               showCrearNivelForm 
                 ? 'bg-red-500 hover:bg-red-600 text-white' 
                 : 'bg-yellow-500 hover:bg-yellow-600 text-white'
@@ -1108,13 +1117,14 @@ export default function AdminPanel() {
               setShowConfigurarNivelesForm(false);
               setShowCrearNivelForm(false);
               setShowCrearAreasForm(false);
+              setShowAmpliarFechaForm(false);
               if (showCostoGeneralForm) {
                 setSelectedConvocatoriaCosto('');
                 setCostoGeneral('');
                 setCostoGeneralError('');
               }
             }}
-            className={`px-4 py-2 rounded-md font-medium transition ${
+            className={`mb-4 px-4 py-2 rounded-md text-white ${
               showCostoGeneralForm
                 ? 'bg-red-500 hover:bg-red-600 text-white'
                 : 'bg-indigo-600 hover:bg-indigo-700 text-white'
@@ -1122,12 +1132,37 @@ export default function AdminPanel() {
           >
             {showCostoGeneralForm ? 'Cancelar' : 'Agregar costo convocatoria'}
           </button>
+
+          <button
+            onClick={() => {
+              setShowAmpliarFechaForm(!showAmpliarFechaForm);
+              setShowCrearAreasForm(false);
+              setShowCrearConvocatoriaForm(false);
+              setShowAsignarAreasForm(false);
+              setShowConfigurarNivelesForm(false);
+              setShowCrearNivelForm(false);
+              setShowCostoGeneralForm(false);
+            }}
+            className={`mb-4 px-4 py-2 rounded-md text-white ${
+              showAmpliarFechaForm
+              ? 'bg-red-500 hover:bg-red-600'
+              : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {showAmpliarFechaForm ? 'Cancelar' : 'Ampliar Fecha'}
+          </button>
         </div>
       </div>
       {/* Contenido dinámico debajo de los botones */}
       {showCrearAreasForm && (
         <div className="bg-white p-6 rounded-md shadow-md">
           <CrearAreas />
+        </div>
+      )}
+
+      {showAmpliarFechaForm && (
+        <div className="bg-white p-6 rounded-md shadow-md">
+          <AmpliarFecha />
         </div>
       )}
 

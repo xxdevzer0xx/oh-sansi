@@ -84,7 +84,8 @@ export default function CrearArea() {
           {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block mb-1 text-sm font-medium">Nombre del Área</label>
+              <label className=
+              "block mb-1 text-sm font-medium">Nombre del Área</label>
               <input
                 type="text"
                 value={nombre}
