@@ -30,10 +30,12 @@ export default function AmpliarFecha() {
     e.preventDefault();
     if (!seleccionada || !nuevaFecha) return;
 
-    if (new Date(nuevaFecha) <= new Date(seleccionada.fecha_fin_inscripcion)) {
-      setError('La nueva fecha debe ser posterior a la actual.');
-      return;
-    }
+    <p className="text-sm">
+      <strong>Fecha actual de fin de inscripción:</strong>{' '}
+      {formatearFecha(seleccionada.fecha_fin_inscripcion)}
+
+    </p>
+
 
     setError('');
     try {
@@ -41,6 +43,12 @@ export default function AmpliarFecha() {
         `http://localhost:8000/api/convocatorias/${seleccionada.id_convocatoria}/ampliar-fecha`,
         { nueva_fecha: nuevaFecha }
       );
+
+      setSeleccionada({
+        ...seleccionada,
+        fecha_fin_inscripcion: nuevaFecha,
+      });
+      
       alert('La fecha de inscripción fue actualizada exitosamente.');
       window.close(); // Cierra si es una ventana emergente
       // Alternativa: window.location.href = '/otra-ruta'; ← si quieres redirigir
@@ -48,6 +56,12 @@ export default function AmpliarFecha() {
       setError(err.response?.data?.message || 'Error al ampliar la fecha.');
     }
   };
+
+  const formatearFecha = (iso: string) => {
+    const [año, mes, dia] = iso.slice(0, 10).split("-");
+    return `${dia}-${mes}-${año}`;
+  };
+
 
   return (
     <div className="max-w-xl mx-auto bg-white p-6 rounded-md shadow-md mt-6">
@@ -86,8 +100,10 @@ export default function AmpliarFecha() {
           <div className="mb-4">
             <p className="text-sm">
               <strong>Fecha actual de fin de inscripción:</strong>{' '}
-              {new Date(seleccionada.fecha_fin_inscripcion).toLocaleDateString()}
+              {formatearFecha(seleccionada.fecha_fin_inscripcion)}
+
             </p>
+
           </div>
 
           <div className="mb-4">
@@ -99,7 +115,7 @@ export default function AmpliarFecha() {
               id="nueva-fecha"
               className="w-full border px-3 py-2 rounded-md"
               value={nuevaFecha}
-              min={seleccionada.fecha_fin_inscripcion}
+              min={seleccionada.fecha_fin_inscripcion.slice(0, 10)}
               onChange={(e) => setNuevaFecha(e.target.value)}
             />
           </div>
