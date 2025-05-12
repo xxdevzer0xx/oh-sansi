@@ -21,7 +21,7 @@ class DocumentoController extends ApiController
         }
 
         $areas = ConvocatoriaArea::where('id_convocatoria', $id)
-            ->with('area') // Asegúrate de que la relación area() exista en el modelo
+            ->with('area')
             ->get();
 
         return $this->successResponse($areas, 'Áreas obtenidas correctamente');

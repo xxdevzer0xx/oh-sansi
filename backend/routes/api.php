@@ -34,6 +34,12 @@ use App\Http\Controllers\Api\RequisitoConvocatoriaController;
 use App\Http\Controllers\Api\ExcelController;
 use App\Http\Controllers\Api\BuscarConvocatoriaNivelController;
 
+
+use App\Http\Controllers\Api\HomeController;
+
+Route::get('/areas-de-convocatoria', [HomeController::class, 'areasDeConvocatoriaActiva']);
+Route::get('/area/{idArea}/documento', [HomeController::class, 'documentoDeArea']);
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
