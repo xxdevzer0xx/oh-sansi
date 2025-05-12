@@ -10,6 +10,7 @@ import RegistroExcel from './pages/RegistroExcel'
 import CrearAreas from './pages/CrearAreas';
 import EstadoInscripcion from './pages/EstadoInscripcion';
 import AmpliarFecha from './pages/AmpliarFecha';
+import AgregarDocumento from './pages/AgregarDocumento';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/camposobligatorios" element={<CamposObligatorios />} />
           <Route path="/registroexcel" element={<RegistroExcel />} />
           <Route path="/ampliarFecha" element={<AmpliarFecha />} />
+          <Route path="/agregarDoc" element={<AgregarDocumento />} />
         </Routes>
       </Layout>
     </Router>

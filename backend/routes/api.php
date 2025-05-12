@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\InscripcionDatosController;
 use App\Http\Controllers\Api\InscripcionCompletaController;
 use App\Http\Controllers\Api\AdminDashboardController;
 
+
 use App\Http\Controllers\Api\ConvocatoriaCompletaController;
 use App\Http\Controllers\Api\AdminConvocatoriaController;
 
@@ -28,6 +29,7 @@ use App\Http\Controllers\Api\AmpliarFechaController;
 use App\Http\Controllers\Api\AreaController;
 use App\Http\Controllers\Api\EstadoInscripcionController;
 
+use App\Http\Controllers\Api\DocumentoController;
 use App\Http\Controllers\Api\RequisitoConvocatoriaController;
 use App\Http\Controllers\Api\ExcelController;
 use App\Http\Controllers\Api\BuscarConvocatoriaNivelController;
@@ -42,6 +44,9 @@ use App\Http\Controllers\Api\BuscarConvocatoriaNivelController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::get('/convocatorias/{id}/areas', [DocumentoController::class, 'obtenerAreasPorConvocatoria']);
+Route::post('/documentos/subir', [DocumentoController::class, 'subirDocumento']);
+
 Route::get('/estado-inscripcion/{ci}', [EstadoInscripcionController::class, 'show']);
 Route::post('/areas', [AreaController::class, 'store']);
 Route::get('/areas', [AreaController::class, 'index']);
