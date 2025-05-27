@@ -12,6 +12,7 @@ export default function DescargarBoleta() {
   const componentRef = useRef<HTMLDivElement>(null);
 
   const [codigoBoleta, setCodigoBoleta] = useState('');
+  const [numeroOrden, setNumeroOrden] = useState('');
   const [isVerifyingBoleta, setIsVerifyingBoleta] = useState(false);
   const [errorMessageBoleta, setErrorMessageBoleta] = useState(''); // Error para sección "Completar Inscripción"
   const [boletaErrorMessage, setBoletaErrorMessage] = useState(''); // Error para sección "descargar boleta"
@@ -24,7 +25,7 @@ export default function DescargarBoleta() {
     email: '',
 }); 
      // Función para manejar la verificación del código
-     const handleDescargarBoleta = async (data) => {
+     const handleDescargarBoleta = async () => {
 
         if (!codigoBoleta.trim()) {
             setBoletaErrorMessage('Por favor ingrese un código de verificación');
@@ -41,6 +42,8 @@ export default function DescargarBoleta() {
           setEstudiantes(data.estudiantes);
           setCostoTotalGeneral(data.costoTotalGeneral);
           setencargado(data.encargado);
+          const numeroOrdenFormateado = `N - ${String(data.orden.id).padStart(6, '0')}`;
+          setNumeroOrden(numeroOrdenFormateado);
           // Almacenar la información de la orden
           setTimeout(() => {
               generatePDF();
@@ -129,7 +132,7 @@ export default function DescargarBoleta() {
                 </div>
               </div>
             { (<BoletaInfo componentRef={componentRef}
-                  estudiantes={estudiantes} costoTotalGeneral={costoTotalGeneral} encargado={encargado}
+                  estudiantes={estudiantes} costoTotalGeneral={costoTotalGeneral} encargado={encargado} numeroOrden={numeroOrden}
                 />) }
           </div>
       )   

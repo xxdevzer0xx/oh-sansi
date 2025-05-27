@@ -208,12 +208,12 @@ class OrdenPagoController extends ApiController
      */
     public function getByCode(Request $request, string $codigo): JsonResponse
     {
+
         if (!$codigo) {
             return $this->errorResponse('Debe proporcionar un código', 422);
         }
         
         $orden = OrdenPago::where( "codigo_unico" ,  $codigo)->first();
-        
         
         if(!$orden){
             return $this->errorResponse('El codigo que usted a ingresado no existe', 404);
@@ -230,8 +230,8 @@ class OrdenPagoController extends ApiController
             "email" => $encargado->email, 
         ];
         $montoTotal = $orden->monto_total;
-        $orden = DB::select(
-            'SELECT e.ci, e.nombres, e.apellidos, ac.nombre_area, nc.nombre_nivel, ca.costo_inscripcion
+        $estudiantes = DB::select(
+            'SELECT op.id_orden, e.ci, e.nombres, e.apellidos, ac.nombre_area, nc.nombre_nivel, ca.costo_inscripcion
             FROM ordenes_pago op, convocatoria_niveles cn, niveles_categoria nc, areas_competencia ac,
                 estudiantes e, convocatoria_areas ca, detalles_lista_inscripcion dli, listas_inscripcion li
             WHERE op.codigo_unico = ?
@@ -253,9 +253,12 @@ class OrdenPagoController extends ApiController
         
         return $this->successResponse(
             [ 
-                "orden" => $orden,
+                "orden" => [
+                    "id" => $estudiantes[0]->id_orden,
+                ],
                 "monto_total" => $montoTotal,
-                "encargado" => $encargado 
+                "encargado" => $encargado,
+                "estudiantes" => $estudiantes,
             ],
             'Orden de pago obtenida correctamente'
         );

@@ -63,7 +63,9 @@ const createNewEstudiante = (): EstudianteFormData => {
 
     let form :EstudianteFormData[] = [] ;
 
-    data.orden.forEach(row => {
+    const estudiantes = data.estudiantes || [];
+
+    estudiantes.forEach(row => {
       
       let indx = getCI(form, row['ci']);
 
@@ -91,6 +93,7 @@ const createNewEstudiante = (): EstudianteFormData => {
       encargado: {
         nombre: data.encargado.nombre,
         ci: data.encargado.ci,
-      }
+      },
+      orden: data.orden
     };
   }

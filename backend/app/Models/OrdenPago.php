@@ -11,6 +11,9 @@ class OrdenPago extends Model
 
     protected $table = 'ordenes_pago';
     protected $primaryKey = 'id_orden';
+
+    public $incrementing = true; 
+    protected $keyType = 'int';
     
     protected $fillable = [
         'codigo_unico',
