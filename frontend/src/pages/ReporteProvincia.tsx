@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { obtenerTodasConvocatorias, obtenerReportePorCampoId, Convocatoria } from '../api/reportes';
 import { exportarPDF } from '../components/exportarPDF';
+import DescargarExcelButton from '../components/DescargarExcelButton';
 
 interface ReporteInscripciones {
     id: string;
@@ -211,7 +212,7 @@ const ReporteProvincia = () => {
         <Box className="reporte-convocatoria" sx={{ flexGrow: 1, p: 3, minWidth: 0 }}>
           <Box sx={{ width: '100%', overflowX: 'auto' }}>
             <Typography variant="h6" gutterBottom>
-              Reporte de Inscripciones por Convocatoria
+              Reporte de Inscripciones por Provincia
             </Typography>
       
             <FormControl fullWidth margin="normal">
@@ -235,9 +236,14 @@ const ReporteProvincia = () => {
                     </MenuItem>
                   ))}
               </Select>
-              <Divider></Divider>
+              </FormControl>
+
+         
+            <FormControl fullWidth margin="normal">
+
+              <InputLabel id="select-departamento-label">Seleccionar Departamento</InputLabel>
               <Select
-                labelId="select-departamentolabel"
+                labelId="select-departamento-label"
                 id="select-departamento"
                 value={selectedDepartamento}
                 label="Seleccionar Departamento"
@@ -253,10 +259,13 @@ const ReporteProvincia = () => {
                     </MenuItem>
                   ))}
               </Select>
+              </FormControl>
+            <FormControl fullWidth margin="normal">
 
+              <InputLabel id="select-provincia-label">Seleccionar Provincia</InputLabel>
                <Select
-                labelId="select-convocatoria-label"
-                id="select-convocatoria"
+                labelId="select-provincia-label"
+                id="select-provincia"
                 value={selectedProvincia}
                 label="Seleccionar Provincia"
                 onChange={handleProvinciaChange}
@@ -338,6 +347,9 @@ const ReporteProvincia = () => {
                 >
                   Exportar PDF
                 </Button>
+                <DescargarExcelButton
+                  data={reporteData} 
+                  campo="Provincia"/>
               </>
             )}
           </Box>

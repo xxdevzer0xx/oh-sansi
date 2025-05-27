@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { obtenerTodasConvocatorias, obtenerReportePorCampoId, Convocatoria } from '../api/reportes';
 import { exportarPDF } from '../components/exportarPDF';
+import DescargarExcelButton from '../components/DescargarExcelButton';
 
 interface ReporteInscripciones {
     id: string;
@@ -157,7 +158,7 @@ const ReporteDepartamento = () => {
         <Box className="reporte-convocatoria" sx={{ flexGrow: 1, p: 3, minWidth: 0 }}>
           <Box sx={{ width: '100%', overflowX: 'auto' }}>
             <Typography variant="h6" gutterBottom>
-              Reporte de Inscripciones por Convocatoria
+              Reporte de Inscripciones por Departamento
             </Typography>
       
             <FormControl fullWidth margin="normal">
@@ -181,7 +182,11 @@ const ReporteDepartamento = () => {
                     </MenuItem>
                   ))}
               </Select>
-              <Divider></Divider>
+            </FormControl>
+
+            <FormControl fullWidth margin="normal">
+                  <InputLabel id="select-departamento-label">Seleccionar Departamento</InputLabel>
+
               <Select
                 labelId="select-departamentolabel"
                 id="select-departamento"
@@ -263,6 +268,10 @@ const ReporteDepartamento = () => {
                 >
                   Exportar PDF
                 </Button>
+                <DescargarExcelButton 
+                  data={reporteData} 
+                  campo="Departamento">
+                </DescargarExcelButton>
               </>
             )}
           </Box>
