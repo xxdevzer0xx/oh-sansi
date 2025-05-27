@@ -237,7 +237,7 @@ const ReporteNiveles = () => {
               </FormControl>
             <FormControl fullWidth margin="normal">
 
-              <InputLabel id="select-provincia-label">Seleccionar Provincia</InputLabel>
+              <InputLabel id="select-provincia-label">Seleccionar Nivel</InputLabel>
                <Select
                 labelId="select-provincia-label"
                 id="select-provincia"
