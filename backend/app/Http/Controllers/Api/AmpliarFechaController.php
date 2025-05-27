@@ -42,11 +42,13 @@ class AmpliarFechaController extends ApiController
      */
     public function index(): JsonResponse
     {
-        $convocatorias = Convocatoria::orderBy('fecha_fin_inscripcion', 'desc')->get([
-            'id_convocatoria',
-            'nombre',
-            'fecha_fin_inscripcion'
-        ]);
+        $convocatorias = Convocatoria::where('estado', 'planificada')
+            ->orderBy('fecha_fin_inscripcion', 'desc')
+            ->get([
+                'id_convocatoria',
+                'nombre',
+                'fecha_fin_inscripcion'
+            ]);
 
         return $this->successResponse($convocatorias, 'Lista de convocatorias obtenida correctamente');
     }
