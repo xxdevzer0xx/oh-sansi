@@ -187,7 +187,7 @@ const ReporteNiveles = () => {
         <Box className="reporte-convocatoria" sx={{ flexGrow: 1, p: 3, minWidth: 0 }}>
           <Box sx={{ width: '100%', overflowX: 'auto' }}>
             <Typography variant="h6" gutterBottom>
-              Reporte de Inscripciones por Convocatoria
+              Reporte de Inscripciones por Niveles/Categoria
             </Typography>
       
             <FormControl fullWidth margin="normal">
@@ -216,7 +216,7 @@ const ReporteNiveles = () => {
          
             <FormControl fullWidth margin="normal">
 
-              <InputLabel id="select-departamento-label">Seleccionar Departamento</InputLabel>
+              <InputLabel id="select-departamento-label">Seleccionar Area</InputLabel>
               <Select
                 labelId="select-departamento-label"
                 id="select-departamento"
@@ -237,7 +237,7 @@ const ReporteNiveles = () => {
               </FormControl>
             <FormControl fullWidth margin="normal">
 
-              <InputLabel id="select-provincia-label">Seleccionar Provincia</InputLabel>
+              <InputLabel id="select-provincia-label">Seleccionar Nivel/Ctegoria</InputLabel>
                <Select
                 labelId="select-provincia-label"
                 id="select-provincia"
