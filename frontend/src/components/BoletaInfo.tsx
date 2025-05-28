@@ -16,7 +16,7 @@ interface Props {
 
 
 const BoletaInfo: React.FC<Props> = ({componentRef, estudiantes , costoTotalGeneral, encargado, numeroOrden}) => {
-
+  
   const total = Number(costoTotalGeneral || 0);
   return (
     <div ref={componentRef} className="p-6 bg-white border border-black w-[800px] mx-auto text-[14px]">
@@ -60,7 +60,7 @@ const BoletaInfo: React.FC<Props> = ({componentRef, estudiantes , costoTotalGene
             ? estudiante.areas_seleccionadas.reduce((total, area) => total + (parseFloat(area.costo) || 0), 0)
             : 0;
 
-          return (
+          return (index < 5 ) ? (
             <div key={estudiante.id} className="grid grid-cols-12 gap-2 mb-1 text-sm py-1 border-b border-gray-100">
               <div className="col-span-1">{index + 1}</div>
               <div className="col-span-4">{estudiante.nombres} {estudiante.apellidos}</div>
@@ -76,7 +76,7 @@ const BoletaInfo: React.FC<Props> = ({componentRef, estudiantes , costoTotalGene
               </div>
               <div className="col-span-2 text-right">{costoPorEstudiante.toFixed(2)} Bs.</div>
             </div>
-          );
+          ) : ( <div style={{"display":"none"}} ></div>);
         })}
       </div>
 

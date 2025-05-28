@@ -191,9 +191,6 @@ export default function ConvocatoriasPage() {
             required
           >
             <option value="planificada">Planificada</option>
-            <option value="abierta">Abierta</option>
-            <option value="cerrada">Cerrada</option>
-            <option value="finalizada">Finalizada</option>
           </FormSelect>
           <div className="flex justify-end mt-8">
             <button

@@ -32,13 +32,16 @@ export default function DescargarBoleta() {
           return;
         }
   
+        setEstudiantes([]);
+        setCostoTotalGeneral(0);
+        
         setIsVerifyingBoleta(true);
         setBoletaErrorMessage('');
   
-        
         try {
           // Llamar a la API para verificar el código
           const data = await descargarBoleta(codigoBoleta);
+
           setEstudiantes(data.estudiantes);
           setCostoTotalGeneral(data.costoTotalGeneral);
           setencargado(data.encargado);
@@ -49,6 +52,7 @@ export default function DescargarBoleta() {
               generatePDF();
             
           }, 500);
+          setCodigoBoleta('');
         } catch (error) {
           let message = 'Error al verificar el código';
           

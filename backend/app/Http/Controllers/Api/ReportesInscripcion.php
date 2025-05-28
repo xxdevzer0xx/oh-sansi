@@ -414,6 +414,7 @@ class ReportesInscripcion extends ApiController
     }
          private function getDataPorUnidadEducativa($convocatoriaId, $unidadEducativa)
     {
+        $unidadEducativa = strtolower($unidadEducativa);
         $convocatoriaAreas = ConvocatoriaArea::where('id_convocatoria', $convocatoriaId)
             ->join('areas_competencia', 'convocatoria_areas.id_area', '=', 'areas_competencia.id_area')
             ->get(['convocatoria_areas.id_convocatoria_area', 'areas_competencia.nombre_area']);
