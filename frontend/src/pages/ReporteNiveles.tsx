@@ -90,10 +90,10 @@ const ReporteNiveles = () => {
             }
         };
       
-        const fetchNiveles = async () => {
+        const fetchNiveles = async (area) => {
 
             try {
-                const data = await getNivelesPorConvocatoria(selectedConvocatoriaId);
+                const data = await getNivelesPorConvocatoria(selectedConvocatoriaId, area);
                 setNiveles(data);
             } catch (error: any) {
                 console.error('Error al cargar las convocatorias:', error);
@@ -136,10 +136,11 @@ const ReporteNiveles = () => {
         setSelectedConvocatoriaId(event.target.value);
         console.log("->",event.target.value);
         fetchAreas(event.target.value);
-    };
-    const handleAreaChange = (event: ChangeEvent<{ value: number | '' }>) => {
+      };
+      const handleAreaChange = (event: ChangeEvent<{ value: number | '' }>) => {
+      console.log("->",event.target.value);
         setSelectedArea(event.target.value);
-        fetchNiveles();
+        fetchNiveles(event.target.value);
     };
     const handleNivelChange = (event: ChangeEvent<{ value: number | '' }>) => {
         setSelectedNivel(event.target.value);
@@ -216,7 +217,7 @@ const ReporteNiveles = () => {
          
             <FormControl fullWidth margin="normal">
 
-              <InputLabel id="select-departamento-label">Seleccionar Departamento</InputLabel>
+              <InputLabel id="select-departamento-label">Seleccionar Area</InputLabel>
               <Select
                 labelId="select-departamento-label"
                 id="select-departamento"
@@ -229,7 +230,7 @@ const ReporteNiveles = () => {
                   <em>Ninguna</em>
                 </MenuItem>
                   {areas.map((area) => (
-                    <MenuItem key={area.id_convocatoria_area} value={area.id_convocatoria_area}>
+                    <MenuItem key={area.id_area} value={area.id_area}>
                       {area.nombre_area}
                     </MenuItem>
                   ))}
