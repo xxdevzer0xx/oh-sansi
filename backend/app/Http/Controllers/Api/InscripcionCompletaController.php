@@ -83,10 +83,67 @@ class InscripcionCompletaController extends ApiController
         ], 'Áreas y niveles obtenidos correctamente');
     }
 
+    public function estudianteEstaInscrito(Request $request){
+        $validator = Validator::make($request->all(), [
+            'lista_inscripcion' => 'required|array',
+            'id_convocatoria' => 'required|string',
+        ]);
+        $convocatoria = Convocatoria::find($request->id_convocatoria);
+        if (!$convocatoria || $convocatoria->estado !== 'abierta') {
+            return $this->errorResponse('La convocatoria no está abierta para inscripciones', 422);
+        }
+        $inscripciones = $request->lista_inscripcion;
+        $erroresInscripcion = [];
+        foreach ($inscripciones as $index => $inscripcionData) {
+            $validatorInscripcion = Validator::make($inscripcionData, [
+                // Datos del estudiante
+                'nombres' => 'required|string|max:100',
+                'apellidos' => 'required|string|max:100',
+                'ci' => 'required|string|max:20',
+                'id_grado' => 'required|exists:grados,id_grado',
 
+                // Datos de la convocatoria y áreas seleccionadas
+                'areas_seleccionadas' => 'required|array|min:1',
+                'areas_seleccionadas.*.id_convocatoria_nivel' => 'required|exists:convocatoria_niveles,id_convocatoria_nivel',
+            ]);
+    
+            if ($validatorInscripcion->fails()) {
+                $erroresInscripcion[$inscripcionData['ci']] = $validatorInscripcion->errors()->first();
+                continue; // Si la validación básica falla, no continuamos con las otras verificaciones para este estudiante
+            }
+        
+            // 1. Verificar el máximo de áreas permitidas por estudiante
+            if (count($inscripcionData['areas_seleccionadas']) > $convocatoria->max_areas_por_estudiante) {
+                $erroresInscripcion[$inscripcionData['ci']] = "Se ha excedido el máximo de áreas permitidas ({$convocatoria->max_areas_por_estudiante}) para este estudiante.";
+                continue;
+            }
+    
+            $areasInscritas = [];
+            foreach ($inscripcionData['areas_seleccionadas'] as $areaSeleccionada) {
+                $idConvocatoriaNivel = $areaSeleccionada['id_convocatoria_nivel'];
+    
+                // 2. Verificar si el estudiante ya está inscrito en este nivel de competencia
+                if ($this->estaInscritoArea($inscripcionData['ci'], $idConvocatoriaNivel)) {
+                    $nombreArea = $this->getNombreArea($idConvocatoriaNivel);
+                    $erroresInscripcion[$inscripcionData['ci']] = "El estudiante con CI {$inscripcionData['ci']} ya está inscrito en el área '{$nombreArea}'.";
+                    continue 2; // Salir del bucle de áreas para este estudiante
+                }
+    
+                $areasInscritas[] = $idConvocatoriaNivel;
+            }
+        }
+    
+        // Si hay errores en la verificación previa, los devolvemos sin iniciar la transacción
+        if (!empty($erroresInscripcion)) {
+            return $this->errorResponse('No se pudieron inscribir algunos estudiantes debido a los siguientes errores:', 422, $erroresInscripcion);
+        }
+
+        return $this->successResponse(null, 'Todos los estudiantes pueden ser inscritos sin problemas de duplicidad o límites de áreas.', 200);
+    }
     
     public function inscribirEstudiante(Request $request)
     {
+        Log::info(__FUNCTION__);
         $validator = Validator::make($request->all(), [
             'lista_inscripcion' => 'required|array',
             'id_convocatoria' => 'required|string',
@@ -104,11 +161,6 @@ class InscripcionCompletaController extends ApiController
             return $this->errorResponse('La convocatoria no está abierta para inscripciones', 422);
         }
     
-        $listaInscripcion = ListaInscripcion::create([
-            'codigo_lista' => null,
-            'id_unidad_educativa' => null,
-            'fecha_creacion' => now()
-        ]);
         $montoTotal = 0;
         $inscripciones = $request->lista_inscripcion;
         $erroresInscripcion = []; // Array para almacenar errores por estudiante
@@ -190,6 +242,12 @@ class InscripcionCompletaController extends ApiController
         if (!empty($erroresInscripcion)) {
             return $this->errorResponse('No se pudieron inscribir algunos estudiantes debido a los siguientes errores:', 422, $erroresInscripcion);
         }
+
+        $listaInscripcion = ListaInscripcion::create([
+            'codigo_lista' => null,
+            'id_unidad_educativa' => null,
+            'fecha_creacion' => now()
+        ]);
     
         // Si no hay errores, iniciamos la transacción para realizar las inscripciones
         DB::beginTransaction();
@@ -387,6 +445,7 @@ class InscripcionCompletaController extends ApiController
      */
     public function inscribirEstud(Request $request)
     {
+        Log::info(__FUNCTION__);
         $validator = Validator::make($request->all(), [
             // Datos del estudiante
             'nombres' => 'required|string|max:100',

@@ -68,6 +68,17 @@ export const inscribirEstudiante = async (data: any ) => {
   }
 };
 
+export const estudianteEstaInscrito = async (data: any ) => {
+  try {
+    const response = await axiosInstance.post('/v1/public/estudiante-esta-inscrito', data);
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error('Error al inscribir estudiante:', error);
+    console.error('Detalles del error de validación:', error.response?.data);
+    throw error;
+  }
+};
+
 /**
  * Procesa la inscripción completa de un estudiante
  * @param data Datos completos del formulario de inscripción

@@ -120,6 +120,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/public/unidades-educativas/buscar', [InscripcionCompletaController::class, 'buscarUnidadesEducativas']);
     Route::post('/public/areas-por-grado', [InscripcionCompletaController::class, 'getAreasPorGrado']);
     Route::post('/public/inscripcion-completa', [InscripcionCompletaController::class, 'inscribirEstudiante']);
+    Route::post('/public/estudiante-esta-inscrito', [InscripcionCompletaController::class, 'estudianteEstaInscrito']);
 
     // Endpoints para página de Administración
     Route::get('/admin/dashboard-data', [AdminDashboardController::class, 'getDashboardData']);
