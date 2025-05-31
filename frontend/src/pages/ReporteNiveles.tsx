@@ -103,17 +103,15 @@ const ReporteNiveles = () => {
             }
         };
       
-
-    useEffect(() => {
-        const cargarReporte = async () => {
-            if (selectedConvocatoriaId && selectedNivel !== '') {
+        const cargarReporte = async (nivel) => {
+            if (selectedConvocatoriaId && nivel !== '') {
                 setReporteData(null);
                 setError(null);
                 setLoading(true);
                 try {
                     const params =  { 
                       area_id:selectedArea,
-                      nivel_id:selectedNivel
+                      nivel_id:nivel
                      };
                     const data = await obtenerReportePorCampoId('nivel', selectedConvocatoriaId , params);
                     setReporteData(data as ReporteInscripciones[]);
@@ -128,22 +126,30 @@ const ReporteNiveles = () => {
                 setReporteData(null);
             }
         };
-        console.log(selectedConvocatoriaId,  selectedArea);
-        cargarReporte();
-    }, [selectedNivel]);
+       
 
     const handleConvocatoriaChange = (event: ChangeEvent<{ value: number | '' }>) => {
         setSelectedConvocatoriaId(event.target.value);
-        console.log("->",event.target.value);
+        setNiveles([]);
+        setAreas([]);
+        setSelectedArea('');                    
+        setSelectedNivel('');                    
+        setReporteData(null);
         fetchAreas(event.target.value);
       };
       const handleAreaChange = (event: ChangeEvent<{ value: number | '' }>) => {
       console.log("->",event.target.value);
         setSelectedArea(event.target.value);
+        setNiveles([]);
+        setSelectedNivel('');                    
+        setReporteData(null);
         fetchNiveles(event.target.value);
+        
     };
     const handleNivelChange = (event: ChangeEvent<{ value: number | '' }>) => {
-        setSelectedNivel(event.target.value);
+      setSelectedNivel(event.target.value);
+      
+      cargarReporte(event.target.value);
     };
 
     const manejarExportacion = () => {
@@ -253,7 +259,7 @@ const ReporteNiveles = () => {
                 {errorConvocatorias && <MenuItem disabled>{errorConvocatorias}</MenuItem>}
                 {convocatorias &&
                     niveles.map((nivel) => (
-                    <MenuItem key={nivel.id_convocatoria_nivel} value={nivel.id_convocatoria_nivel}>
+                    <MenuItem key={nivel.id_convocatoria_nivel} value={nivel.id_nivel}>
                       {nivel.nombre_nivel}
                     </MenuItem>
                   ))}
