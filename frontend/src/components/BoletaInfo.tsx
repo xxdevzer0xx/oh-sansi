@@ -11,12 +11,13 @@ interface Props {
   estudiantes: EstudianteFormData[] , 
   costoTotalGeneral:number,
   numeroOrden: string,
+  codigoBoleta: string,
 }
 
 
 
 const BoletaInfo: React.FC<Props> = ({componentRef, estudiantes , costoTotalGeneral, encargado, numeroOrden}) => {
-  
+
   const total = Number(costoTotalGeneral || 0);
   return (
     <div ref={componentRef} className="p-6 bg-white border border-black w-[800px] mx-auto text-[14px]">
@@ -44,23 +45,28 @@ const BoletaInfo: React.FC<Props> = ({componentRef, estudiantes , costoTotalGene
         <div>CI: {encargado.ci}</div>
       </div>
 
-      {/* Detalle de estudiantes */}
-      <h4 className="font-medium text-gray-800 mb-2">Detalle de Estudiantes</h4>
-      <div className="border-t border-b py-2">
-        <div className="grid grid-cols-12 gap-2 mb-2 text-sm font-medium">
-          <div className="col-span-1">#</div>
-          <div className="col-span-4">Estudiante</div>
-          <div className="col-span-2">CI</div>
-          <div className="col-span-3">Áreas</div>
-          <div className="col-span-2 text-right">Costo</div>
-        </div>
+      <div className="mb-4 flex justify-between">
+        <div>Código de Inscripción: {codigoBoleta}</div>
+      </div> 
 
-        {estudiantes.map((estudiante, index) => {
-          const costoPorEstudiante = estudiante.areas_seleccionadas
-            ? estudiante.areas_seleccionadas.reduce((total, area) => total + (parseFloat(area.costo) || 0), 0)
-            : 0;
+        {estudiantes.length <= 5 ? (
+      <>
+        <h4 className="font-medium text-gray-800 mb-2">Detalle de Estudiantes</h4>
+        <div className="border-t border-b py-2">
+          <div className="grid grid-cols-12 gap-2 mb-2 text-sm font-medium">
+            <div className="col-span-1">#</div>
+            <div className="col-span-4">Estudiante</div>
+            <div className="col-span-2">CI</div>
+            <div className="col-span-3">Áreas</div>
+            <div className="col-span-2 text-right">Costo</div>
+          </div>
 
-          return (index < 5 ) ? (
+          {estudiantes.map((estudiante, index) => {
+            const costoPorEstudiante = estudiante.areas_seleccionadas
+              ? estudiante.areas_seleccionadas.reduce((total, area) => total + (parseFloat(area.costo) || 0), 0)
+              : 0;
+
+          return (
             <div key={estudiante.id} className="grid grid-cols-12 gap-2 mb-1 text-sm py-1 border-b border-gray-100">
               <div className="col-span-1">{index + 1}</div>
               <div className="col-span-4">{estudiante.nombres} {estudiante.apellidos}</div>
@@ -76,7 +82,7 @@ const BoletaInfo: React.FC<Props> = ({componentRef, estudiantes , costoTotalGene
               </div>
               <div className="col-span-2 text-right">{costoPorEstudiante.toFixed(2)} Bs.</div>
             </div>
-          ) : ( <div style={{"display":"none"}} ></div>);
+          );
         })}
       </div>
 

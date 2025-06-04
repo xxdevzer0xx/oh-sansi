@@ -10,6 +10,7 @@ import Reportes from './pages/ReportesConvocatoria';
 import EstadoInscripcion from './pages/EstadoInscripcion';
 import AgregarDocumento from './pages/AgregarDocumento';
 import LlenarExcel from './pages/LlenarExcel';
+import CompletarInscripcion from './pages/CompletarInscripcion';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="*" element={<Navigate to="/admin/convocatorias" replace />} />
           <Route path="/agregarDoc" element={<AgregarDocumento />} />
           <Route path="/llenarexcel" element={<LlenarExcel />} />
+          <Route path="/completarIns" element={<CompletarInscripcion />} />
         </Routes>
       </Layout>
     </Router>

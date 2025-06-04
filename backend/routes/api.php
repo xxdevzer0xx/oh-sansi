@@ -31,7 +31,7 @@ use App\Http\Controllers\Api\EstadoInscripcionController;
 use App\Http\Controllers\Api\DocumentoController;
 
 use App\Http\Controllers\Api\HomeController;
-
+use App\Http\Controllers\Api\ComprobanteOCRController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -42,6 +42,16 @@ use App\Http\Controllers\Api\HomeController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+
+
+Route::post('comprobantes-pago/ocr/verificar', [ComprobanteOCRController::class, 'verificarComprobante']);
+Route::prefix('v1')->group(function () {
+    // ... otras rutas
+    Route::post('comprobantes-pago/ocr/verificar', [ComprobanteOCRController::class, 'verificarComprobante']);
+});
+
+Route::get('/orden/by-code/{codigo}', [OrdenPagoController::class, 'getByCode']);
 
 Route::get('/areas-de-convocatoria', [HomeController::class, 'areasDeConvocatoriaActiva']);
 Route::get('/area/{idArea}/documento', [HomeController::class, 'documentoDeArea']);

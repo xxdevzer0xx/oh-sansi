@@ -45,7 +45,7 @@ export default function DescargarBoleta() {
           setEstudiantes(data.estudiantes);
           setCostoTotalGeneral(data.costoTotalGeneral);
           setencargado(data.encargado);
-          const numeroOrdenFormateado = `N - ${String(data.orden.id).padStart(6, '0')}`;
+          const numeroOrdenFormateado = `${String(data.orden.id).padStart(6, '0')}`;
           setNumeroOrden(numeroOrdenFormateado);
           // Almacenar la información de la orden
           setTimeout(() => {
@@ -135,8 +135,14 @@ export default function DescargarBoleta() {
                   </button>
                 </div>
               </div>
-            { (<BoletaInfo componentRef={componentRef}
-                  estudiantes={estudiantes} costoTotalGeneral={costoTotalGeneral} encargado={encargado} numeroOrden={numeroOrden}
+            { (<BoletaInfo
+                  componentRef={componentRef}
+                  estudiantes={estudiantes}
+                  costoTotalGeneral={costoTotalGeneral}
+                  encargado={encargado}
+                  numeroOrden={numeroOrden}
+                  codigoBoleta={codigoBoleta}
+
                 />) }
           </div>
       )   
