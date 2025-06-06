@@ -49,12 +49,11 @@ export default function CompletarInscripcionPage() {
     console.log('Nombre:', file.name);
 
     const formData = new FormData();
-    formData.append('codigo', codigoFromUrl || '');
-    //formData.append('codigo', 'ABC123');
+    formData.append('codigo',ordenInfo?.orden.codigo_unico || '');
+    //formData.append('codigo', 'O-SANSI-2025-81158');
     formData.append('archivo', file);  // No esta manadando el archivo bien. 
-
-    console.log('Archivo:', file);
-    console.log('Código:', codigoFromUrl); // el codigo lo mandsa vacio 
+    console.log('OrdenIn:', ordenInfo);
+    console.log('Imp2:', ordenInfo?.orden.codigo_unico); // el codigo lo mandsa vacio 
     for (let pair of formData.entries()) {
       console.log(`${pair[0]}:`, pair[1]);
     }

@@ -49,15 +49,12 @@ export const verificarCodigoOrden = async (codigo: string) => {
  */
 export const subirComprobantePago = async (formData: FormData) => {
   try {
-    for (let [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`${key}: archivo - ${value.name} (${value.type})`);
-      } else {
-        console.log(`${key}:`, value);
-      }
-    }
 
     const response = await axiosInstance.post('/verificacion-pago/procesar', formData, {
+       headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+
       onUploadProgress: (progressEvent) => {
         // Esta función se puede usar para reportar el progreso
         if (progressEvent.total) {
