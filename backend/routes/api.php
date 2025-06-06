@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\DocumentoController;
 
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Auth\AdminAuthController;
+use App\Http\Controllers\Api\VerificacionPagoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +49,14 @@ use App\Http\Controllers\Auth\AdminAuthController;
 | Admin Authentication Routes
 |--------------------------------------------------------------------------
 */
+
+Route::prefix('verificacion-pago')->group(function () {
+    Route::get('estado', [VerificacionPagoController::class, 'verificarEstado']);
+    
+    Route::post('procesar', [VerificacionPagoController::class, 'procesarComprobante']);
+
+});
+
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
     

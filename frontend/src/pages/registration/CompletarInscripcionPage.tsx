@@ -44,9 +44,20 @@ export default function CompletarInscripcionPage() {
 
   // Crear un wrapper para la función de upload que convierte File a FormData
   const uploadWrapper = useCallback(async (file: File) => {
+    console.log('Archivo:', file);
+    console.log('Tipo:', file.type);        // ← Esperado: 'application/pdf'
+    console.log('Nombre:', file.name);
+
     const formData = new FormData();
-    formData.append('pdf_comprobante', file);
-    formData.append('codigo_orden', codigoFromUrl || '');
+    formData.append('codigo', codigoFromUrl || '');
+    //formData.append('codigo', 'ABC123');
+    formData.append('archivo', file);  // No esta manadando el archivo bien. 
+
+    console.log('Archivo:', file);
+    console.log('Código:', codigoFromUrl); // el codigo lo mandsa vacio 
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}:`, pair[1]);
+    }
     return subirComprobantePago(formData);
   }, [codigoFromUrl]);
 

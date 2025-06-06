@@ -28,6 +28,7 @@ interface BoletaResponse {
  * Verifica si existe una orden de pago con el código especificado
  * @param codigo Código único de la orden
  */
+
 export const verificarCodigoOrden = async (codigo: string) => {
   try {
     const response = await axiosInstance.post('/v1/comprobantes-pago/verificar-codigo', {
@@ -48,10 +49,15 @@ export const verificarCodigoOrden = async (codigo: string) => {
  */
 export const subirComprobantePago = async (formData: FormData) => {
   try {
-    const response = await axiosInstance.post('/v1/comprobantes-pago/por-codigo', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
+    for (let [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`${key}: archivo - ${value.name} (${value.type})`);
+      } else {
+        console.log(`${key}:`, value);
+      }
+    }
+
+    const response = await axiosInstance.post('/verificacion-pago/procesar', formData, {
       onUploadProgress: (progressEvent) => {
         // Esta función se puede usar para reportar el progreso
         if (progressEvent.total) {
@@ -62,8 +68,15 @@ export const subirComprobantePago = async (formData: FormData) => {
       }
     });
     return response.data?.data || response.data;
-  } catch (error) {
-    console.error('Error al subir el comprobante:', error);
+  } catch (error:any) {
+     if (error.response) {
+      console.log('Status:', error.response.status);
+      console.log('Data:', error.response.data);
+      console.log('Errors:', error.response.data.errors);
+    } else {
+      console.error('Error inesperado:', error);
+    }
+    //console.error('Error al subir el comprobante:', error);
     throw error;
   }
 };
