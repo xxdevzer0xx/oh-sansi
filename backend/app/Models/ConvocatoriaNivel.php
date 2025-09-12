@@ -5,7 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\Grado;
+use App\Models\ConvocatoriaArea;
+use App\Models\NivelCategoria;
+
 class ConvocatoriaNivel extends Model
+
 {
     use HasFactory;
 
@@ -29,12 +34,14 @@ class ConvocatoriaNivel extends Model
         return $this->belongsTo(NivelCategoria::class, 'id_nivel');
     }
 
-    public function gradoMin()
+    // Cambiando el nombre del método de gradoMin a gradoMinimo para que coincida con la llamada en el controlador
+    public function gradoMinimo()
     {
         return $this->belongsTo(Grado::class, 'id_grado_min');
     }
 
-    public function gradoMax()
+    // Cambiando el nombre del método de gradoMax a gradoMaximo para que coincida con la llamada en el controlador
+    public function gradoMaximo()
     {
         return $this->belongsTo(Grado::class, 'id_grado_max');
     }

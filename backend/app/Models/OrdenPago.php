@@ -11,27 +11,27 @@ class OrdenPago extends Model
 
     protected $table = 'ordenes_pago';
     protected $primaryKey = 'id_orden';
+
+    public $incrementing = true; 
+    protected $keyType = 'int';
     
     protected $fillable = [
         'codigo_unico',
         'tipo_origen',
-        'id_inscripcion',
         'id_lista',
         'monto_total',
         'fecha_emision',
         'fecha_vencimiento',
         'estado',
+        'encargado_email' ,
+        'encargado_nombre' ,
+        'encargado_ci' ,
     ];
 
     protected $casts = [
         'fecha_emision' => 'datetime',
         'fecha_vencimiento' => 'date',
     ];
-
-    public function inscripcion()
-    {
-        return $this->belongsTo(Inscripcion::class, 'id_inscripcion');
-    }
 
     public function lista()
     {

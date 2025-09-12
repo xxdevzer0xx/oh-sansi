@@ -13,19 +13,12 @@ class ListaInscripcion extends Model
     protected $primaryKey = 'id_lista';
     
     protected $fillable = [
-        'codigo_lista',
-        'id_unidad_educativa',
         'fecha_creacion',
     ];
 
     protected $casts = [
         'fecha_creacion' => 'datetime',
     ];
-
-    public function unidadEducativa()
-    {
-        return $this->belongsTo(UnidadEducativa::class, 'id_unidad_educativa');
-    }
 
     public function detalles()
     {
@@ -35,5 +28,10 @@ class ListaInscripcion extends Model
     public function ordenesPago()
     {
         return $this->hasMany(OrdenPago::class, 'id_lista');
+    }
+
+    public function encargadoPago()
+    {
+        return $this->hasMany(EncargadoPago::class, 'id_lista');
     }
 }

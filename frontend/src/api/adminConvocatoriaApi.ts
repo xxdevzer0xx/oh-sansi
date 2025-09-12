@@ -15,6 +15,20 @@ export const getConvocatoriasActivas = async () => {
 };
 
 /**
+ * Obtiene todas las convocatorias activas
+ */
+export const getConvocatoriasPlanificadas = async () => {
+  try {
+    const response = await axiosInstance.get('/v1/admin/convocatorias-planificadas');
+    // Asegurar que se retorna la data independientemente de la estructura
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error('Error al obtener convocatorias activas:', error);
+    throw error;
+  }
+};
+
+/**
  * Obtiene todas las áreas de competencia
  */
 export const getAreasCompetencia = async () => {
@@ -43,6 +57,20 @@ export const getNivelesCategoria = async () => {
 };
 
 /**
+ * Crea un nuevo nivel de categoría
+ * @param nombre_nivel Nombre del nivel a crear
+ */
+export const createNivelCategoria = async (nombre_nivel) => {
+  try {
+    const response = await axiosInstance.post('/v1/niveles', { nombre_nivel });
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error('Error al crear nivel de categoría:', error);
+    throw error;
+  }
+};
+
+/**
  * Obtiene todos los grados
  */
 export const getGrados = async () => {
@@ -57,8 +85,8 @@ export const getGrados = async () => {
 };
 
 /**
- * Crea una nueva convocatoria
- * @param data Datos de la convocatoria
+ * Crea una nueva convocatoria (solo datos básicos)
+ * @param data Datos básicos de la convocatoria
  */
 export const crearConvocatoria = async (data) => {
   try {
@@ -82,19 +110,80 @@ export const crearConvocatoria = async (data) => {
 };
 
 /**
- * Asocia áreas y niveles a una convocatoria
- * @param data Datos de asociación
+ * Asocia áreas a una convocatoria existente
+ * @param data Datos de asociación de áreas
  */
 export const asociarAreas = async (data) => {
   try {
-    console.log('Enviando datos al servidor:', data);
+    console.log('Enviando datos de áreas al servidor:', data);
     const response = await axiosInstance.post('/v1/admin/convocatorias/asociar-areas', data);
     return response.data;
   } catch (error) {
-    console.error('Error completo al asociar áreas y niveles:', error);
+    console.error('Error al asociar áreas:', error);
     if (error.response) {
       console.error('Respuesta del servidor:', error.response.data);
     }
+    throw error;
+  }
+};
+
+/**
+ * Asocia niveles y grados a las áreas de una convocatoria
+ * @param data Datos de asociación de niveles y grados
+ */
+export const asociarNivelesGrados = async (data) => {
+  try {
+    console.log('Enviando datos de niveles y grados al servidor:', data);
+    const response = await axiosInstance.post('/v1/admin/convocatorias/asociar-niveles-grados', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error al asociar niveles y grados:', error);
+    if (error.response) {
+      console.error('Respuesta del servidor:', error.response.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Obtiene las áreas asociadas a una convocatoria específica
+ * @param idConvocatoria ID de la convocatoria
+ */
+export const getAreasPorConvocatoria = async (idConvocatoria) => {
+  try {
+    const response = await axiosInstance.get(`/v1/admin/convocatorias/${idConvocatoria}/areas`);
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error(`Error al obtener áreas para la convocatoria ${idConvocatoria}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Obtiene los niveles asociados a las áreas de una convocatoria específica
+ * @param idConvocatoria ID de la convocatoria
+ */
+export const getNivelesPorConvocatoria = async (idConvocatoria) => {
+  try {
+    const response = await axiosInstance.get(`/v1/admin/convocatorias/${idConvocatoria}/niveles`);
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error(`Error al obtener niveles para la convocatoria ${idConvocatoria}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Asigna un costo general a todas las áreas de una convocatoria
+ * @param idConvocatoria ID de la convocatoria
+ * @param costo_inscripcion Costo general a asignar
+ */
+export const setCostoGeneralConvocatoria = async (idConvocatoria: string, costo_inscripcion: number) => {
+  try {
+    const response = await axiosInstance.post(`/v1/admin/convocatorias/${idConvocatoria}/set-costo-general`, { costo_inscripcion });
+    return response.data;
+  } catch (error) {
+    console.error('Error al asignar costo general:', error);
     throw error;
   }
 };
